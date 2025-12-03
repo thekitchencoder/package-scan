@@ -1,0 +1,93 @@
+{
+  "total_findings": 6,
+  "findings": [
+    {
+      "type": "package.json",
+      "file": "/scan/examples/test-package/package.json",
+      "package": "@asyncapi/parser",
+      "version": "3.4.1, 3.4.2",
+      "version_spec": ">=3.4",
+      "dependency_type": "dependencies",
+      "included_versions": [
+        "3.4.1",
+        "3.4.2"
+      ],
+      "match_type": "range",
+      "remediation": {
+        "strategy": "raise_minimum",
+        "suggested_spec": ">=3.4.3",
+        "affected_versions": [
+          "3.4.1",
+          "3.4.2"
+        ]
+      }
+    },
+    {
+      "type": "package.json",
+      "file": "/scan/examples/test-package/package.json",
+      "package": "@lessondesk/babel-preset",
+      "version": "1.0.1",
+      "version_spec": "1.0.1",
+      "dependency_type": "dependencies",
+      "included_versions": [
+        "1.0.1"
+      ],
+      "match_type": "range",
+      "remediation": {
+        "strategy": "raise_minimum",
+        "suggested_spec": ">=1.0.2",
+        "affected_versions": [
+          "1.0.1"
+        ]
+      }
+    },
+    {
+      "type": "lockfile",
+      "lockfile_type": "package-lock.json",
+      "file": "/scan/examples/test-package/package-lock.json",
+      "package": "@accordproject/concerto-analysis",
+      "version": "3.24.1",
+      "match_type": "exact",
+      "remediation": {
+        "strategy": "upgrade_and_update_lockfile",
+        "suggested_spec": ">=3.24.2"
+      }
+    },
+    {
+      "type": "lockfile",
+      "lockfile_type": "package-lock.json",
+      "file": "/scan/examples/test-package/package-lock.json",
+      "package": "@lessondesk/babel-preset",
+      "version": "1.0.1",
+      "match_type": "exact",
+      "remediation": {
+        "strategy": "upgrade_and_update_lockfile",
+        "suggested_spec": ">=1.0.2"
+      }
+    },
+    {
+      "type": "lockfile",
+      "lockfile_type": "yarn.lock",
+      "file": "/scan/examples/test-package/yarn.lock",
+      "package": "02-echo",
+      "version": "0.0.7",
+      "match_type": "exact",
+      "remediation": {
+        "strategy": "upgrade_and_update_lockfile",
+        "suggested_spec": ">=0.0.8"
+      }
+    },
+    {
+      "type": "lockfile",
+      "lockfile_type": "yarn.lock",
+      "file": "/scan/examples/test-package/yarn.lock",
+      "package": "@actbase/css-to-react-native-transform",
+      "version": "1.0.3",
+      "match_type": "exact",
+      "remediation": {
+        "strategy": "upgrade_and_update_lockfile",
+        "suggested_spec": ">=1.0.4"
+      }
+    }
+  ]
+}

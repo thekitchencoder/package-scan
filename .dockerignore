@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+.claude/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# Documentation (already in image)
+README.md
+CLAUDE.md
+GEMINI.md
+
+# Test outputs
+hulud_scan_report.json
+examples/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hulud-scan"
+version = "0.1.0"
+description = "NPM Package Threat Scanner for HULUD worm-compromised packages"
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [{ name = "Hulud Security" }]
+license = { text = "MIT" }
+dependencies = [
+  "click>=8.1",
+  "semantic_version>=2.10",
+]
+
+[project.scripts]
+npm-scan = "scan_npm_threats:cli"
+
+[tool.setuptools]
+py-modules = ["scan_npm_threats"]
