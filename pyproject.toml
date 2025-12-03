@@ -15,8 +15,14 @@ dependencies = [
   "semantic_version>=2.10",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+]
+
 [project.scripts]
-npm-scan = "scan_npm_threats:cli"
+npm-scan = "hulud_scan.scan_npm_threats:cli"
 
 [tool.setuptools]
-py-modules = ["scan_npm_threats"]
+package-dir = {"" = "src"}
+packages = ["hulud_scan"]

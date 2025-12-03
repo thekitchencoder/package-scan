@@ -1,5 +1,5 @@
 from pathlib import Path
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 this_dir = Path(__file__).parent
@@ -14,14 +14,15 @@ setup(
     python_requires=">=3.8",
     license="MIT",
     author="Hulud Security",
-    py_modules=["scan_npm_threats"],
+    package_dir={"": "src"},
+    packages=find_packages(where="src"),
     install_requires=[
         "click>=8.1",
         "semantic_version>=2.10",
     ],
     entry_points={
         "console_scripts": [
-            "npm-scan=scan_npm_threats:cli",
+            "npm-scan=hulud_scan.scan_npm_threats:cli",
         ]
     },
 )

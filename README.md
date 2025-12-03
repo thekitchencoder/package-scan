@@ -211,11 +211,11 @@ Lock file scanning is particularly valuable because it:
 Run from source without installing globally (still recommended to use a venv):
 
 ```bash
-python scan_npm_threats.py --help
-python scan_npm_threats.py --dir /path/to/project --csv /path/to/sha1-Hulud.csv
+python -m hulud_scan.scan_npm_threats --help
+python -m hulud_scan.scan_npm_threats --dir /path/to/project --csv /path/to/sha1-Hulud.csv
 ```
 
-Run linting/formatting or tests (if you add them) as desired. The project is packaged via `pyproject.toml` using `setuptools` and exposes the console script `npm-scan` mapped to `scan_npm_threats:cli`.
+Run linting/formatting or tests (if you add them) as desired. The project is packaged via `pyproject.toml` using `setuptools`, with the source code located in the `src` directory. It exposes the console script `npm-scan` mapped to `hulud_scan.scan_npm_threats:cli`.
 
 ## License
 
