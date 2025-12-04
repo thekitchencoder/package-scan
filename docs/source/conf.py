@@ -10,8 +10,12 @@ project = 'package-scan'
 copyright = '2025, Package Scan Security'
 author = 'Package Scan Security'
 
-version = '0.3.1'
-release = '0.3.1'
+# Get version from package metadata (single source of truth: pyproject.toml)
+try:
+    from importlib.metadata import version as get_version
+    version = release = get_version("package-scan")
+except Exception:
+    version = release = "0.0.0-dev"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
