@@ -28,7 +28,7 @@ jobs:
           
       - name: Install dependencies
         run: |
-          pip install -e ".[all,docs]"
+          pip install -e ".[all,dev]"
           
       - name: Build Sphinx docs
         run: |
