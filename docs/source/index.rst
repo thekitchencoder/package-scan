@@ -3,6 +3,8 @@ package-scan documentation
 
 Welcome to the package-scan documentation!
 
+🐙 **GitHub Repository**: https://github.com/thekitchencoder/package-scan
+
 **package-scan** is a multi-ecosystem package threat scanner that detects compromised packages across npm, Maven/Gradle, and Python (pip) projects.
 
 .. toctree::

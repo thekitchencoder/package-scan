@@ -2,6 +2,8 @@
 
 **Rapid-response supply chain attack scanner** for detecting compromised packages during active security incidents.
 
+📚 **[Full Documentation](https://thekitchencoder.github.io/package-scan/)** | 🐙 **[GitHub](https://github.com/thekitchencoder/package-scan)**
+
 When a new supply chain attack emerges (like the sha1-Hulud worm or event-stream incident), security teams need to **quickly scan their infrastructure** against lists of known compromised packages. `package-scan` fills this critical gap—it's not a replacement for comprehensive vulnerability scanners like Snyk or npm audit, but a **focused tool for rapid incident response**.
 
 ## Why package-scan?
@@ -439,7 +441,8 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Links
 
-- **Documentation**: See `docs/` directory
+- **Documentation**: [https://thekitchencoder.github.io/package-scan/](https://thekitchencoder.github.io/package-scan/)
+- **GitHub Repository**: [https://github.com/thekitchencoder/package-scan](https://github.com/thekitchencoder/package-scan)
 - **Issues**: [GitHub Issues](https://github.com/thekitchencoder/package-scan/issues)
 - **Docker Hub**: [kitchencoder/package-scan](https://hub.docker.com/r/kitchencoder/package-scan)
 - **Roadmap**: [ROADMAP.md](ROADMAP.md)
