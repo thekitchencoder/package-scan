@@ -90,4 +90,4 @@ jobs:
 
       - name: Verify Docker image security (non-root user)
         run: |
-          docker run --rm package-scan:test whoami | grep -q scanner || exit 1
+          docker run --rm --entrypoint whoami package-scan:test | grep -q scanner
