@@ -8,7 +8,7 @@ from pathlib import Path
 
 import click
 
-from hulud_scan.core import Finding, Remediation, ThreatDatabase
+from package_scan.core import Finding, Remediation, ThreatDatabase
 from .base import EcosystemAdapter, ProgressSpinner
 
 

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-hulud-scan is a Python CLI tool for detecting compromised packages across multiple ecosystems. It scans JavaScript (npm), Java (Maven/Gradle), and Python (pip/poetry/pipenv/conda) projects against a CSV database of known compromised packages.
+package-scan is a Python CLI tool for detecting compromised packages across multiple ecosystems. It scans JavaScript (npm), Java (Maven/Gradle), and Python (pip/poetry/pipenv/conda) projects against a CSV database of known compromised packages.
 
 **Supported Ecosystems:**
 - **npm**: JavaScript/Node.js packages (package.json, lockfiles, node_modules)
@@ -28,8 +28,8 @@ hulud-scan is a Python CLI tool for detecting compromised packages across multip
 
 3. Verify installation:
    ```bash
-   hulud-scan --help
-   hulud-scan --list-ecosystems
+   package-scan --help
+   package-scan --list-ecosystems
    ```
 
 ## Running the Tool
@@ -38,36 +38,36 @@ hulud-scan is a Python CLI tool for detecting compromised packages across multip
 
 **Basic scanning:**
 ```bash
-hulud-scan                                    # Scan current directory (all threats)
-hulud-scan --dir /path/to/project             # Scan specific directory
-hulud-scan --output custom_report.json        # Custom output file
-hulud-scan --no-save                          # Don't save JSON report
+package-scan                                    # Scan current directory (all threats)
+package-scan --dir /path/to/project             # Scan specific directory
+package-scan --output custom_report.json        # Custom output file
+package-scan --no-save                          # Don't save JSON report
 ```
 
 **Threat selection:**
 ```bash
-hulud-scan --threat sha1-Hulud                # Scan for specific threat
-hulud-scan --threat sha1-Hulud --threat other # Scan for multiple threats
-hulud-scan --csv /path/to/custom.csv          # Use custom threat CSV file
+package-scan --threat sha1-Hulud                # Scan for specific threat
+package-scan --threat sha1-Hulud --threat other # Scan for multiple threats
+package-scan --csv /path/to/custom.csv          # Use custom threat CSV file
 ```
 
 **Scan specific ecosystem:**
 ```bash
-hulud-scan --ecosystem npm                    # npm only
-hulud-scan --ecosystem maven                  # Maven/Gradle only
-hulud-scan --ecosystem pip                    # Python only
-hulud-scan --ecosystem npm,maven,pip          # Multiple ecosystems
+package-scan --ecosystem npm                    # npm only
+package-scan --ecosystem maven                  # Maven/Gradle only
+package-scan --ecosystem pip                    # Python only
+package-scan --ecosystem npm,maven,pip          # Multiple ecosystems
 ```
 
 **List supported ecosystems:**
 ```bash
-hulud-scan --list-ecosystems
+package-scan --list-ecosystems
 ```
 
 **List compromised packages in database:**
 ```bash
-hulud-scan --list-affected-packages           # Formatted display
-hulud-scan --list-affected-packages-csv       # Raw CSV output
+package-scan --list-affected-packages           # Formatted display
+package-scan --list-affected-packages-csv       # Raw CSV output
 ```
 
 ### Legacy npm-only Command
@@ -81,32 +81,32 @@ npm-scan --dir /path/to/project
 
 **Build image:**
 ```bash
-docker build -t hulud-scan .
+docker build -t package-scan .
 ```
 
 **Scan a project:**
 ```bash
 # Scan current directory (all threats)
-docker run --rm -v "$(pwd):/workspace" hulud-scan
+docker run --rm -v "$(pwd):/workspace" package-scan
 
 # Scan for specific threat
-docker run --rm -v "$(pwd):/workspace" hulud-scan --threat sha1-Hulud
+docker run --rm -v "$(pwd):/workspace" package-scan --threat sha1-Hulud
 
 # Scan specific ecosystem
-docker run --rm -v "$(pwd):/workspace" hulud-scan --ecosystem maven
+docker run --rm -v "$(pwd):/workspace" package-scan --ecosystem maven
 
 # Use custom threat CSV
 docker run --rm \
   -v "$(pwd):/workspace" \
   -v "$(pwd)/custom-threat.csv:/app/custom.csv" \
-  hulud-scan --csv /app/custom.csv
+  package-scan --csv /app/custom.csv
 
 # Get help
-docker run --rm hulud-scan --help
+docker run --rm package-scan --help
 ```
 
 **Output:**
-- Reports saved as `./hulud_scan_report.json` in the mounted workspace
+- Reports saved as `./package_scan_report.json` in the mounted workspace
 - Use `--output` to change report filename
 - Use `--no-save` to skip saving (console output only)
 
@@ -117,7 +117,7 @@ docker run --rm hulud-scan --help
 The scanner uses a modular architecture with ecosystem-specific adapters:
 
 ```
-src/hulud_scan/
+src/package_scan/
 ├── cli.py                         # Multi-ecosystem CLI
 ├── core/                          # Shared components
 │   ├── models.py                  # Finding, Remediation dataclasses
@@ -345,7 +345,7 @@ Structured report with ecosystem sections and threat tracking:
 **Image Details:**
 - Base: `python:3.11-slim` (~150MB final size)
 - User: Non-root `scanner:scanner`
-- Entrypoint: `hulud-scan` CLI
+- Entrypoint: `package-scan` CLI
 - Working directory: `/workspace`
 - Threat databases: Baked into `/app/threats/` directory
 
@@ -360,25 +360,25 @@ Structured report with ecosystem sections and threat tracking:
 
 **Volume Mounts:**
 - `/workspace`: Mount your project here
-- Reports saved to `/workspace/hulud_scan_report.json`
+- Reports saved to `/workspace/package_scan_report.json`
 
 **Example Workflows:**
 
 Scan a polyglot monorepo:
 ```bash
-docker run --rm -v "$(pwd):/workspace" hulud-scan
+docker run --rm -v "$(pwd):/workspace" package-scan
 # Auto-detects all ecosystems, reports combined findings
 ```
 
 CI/CD integration:
 ```bash
-docker run --rm -v "$(pwd):/workspace" hulud-scan --no-save > /dev/null
+docker run --rm -v "$(pwd):/workspace" package-scan --no-save > /dev/null
 # Exit code: 0 = clean, 1 = threats found
 ```
 
 Scan for specific threat:
 ```bash
-docker run --rm -v "$(pwd):/workspace" hulud-scan --threat sha1-Hulud
+docker run --rm -v "$(pwd):/workspace" package-scan --threat sha1-Hulud
 # Only scans for sha1-Hulud worm packages
 ```
 
@@ -387,7 +387,7 @@ Custom threat database:
 docker run --rm \
   -v "$(pwd):/workspace" \
   -v "$(pwd)/custom-threats.csv:/app/custom.csv" \
-  hulud-scan --csv /app/custom.csv
+  package-scan --csv /app/custom.csv
 ```
 
 ## Test Fixtures
@@ -401,7 +401,7 @@ The repository includes test fixtures for all supported ecosystems:
 
 Run tests:
 ```bash
-hulud-scan --dir examples --no-save
+package-scan --dir examples --no-save
 # Should detect 31 total findings across all ecosystems
 ```
 
@@ -409,7 +409,7 @@ hulud-scan --dir examples --no-save
 
 To add support for a new ecosystem (e.g., Ruby/gem, Rust/cargo):
 
-1. Create adapter: `src/hulud_scan/adapters/new_adapter.py`
+1. Create adapter: `src/package_scan/adapters/new_adapter.py`
 2. Inherit from `EcosystemAdapter`
 3. Implement required methods:
    - `_get_ecosystem_name()`: Return ecosystem identifier
@@ -430,7 +430,7 @@ To add a new threat database:
 
 1. Create a new CSV file in `threats/` directory (e.g., `threats/my-threat.csv`)
 2. Use the multi-ecosystem format: `ecosystem,name,version`
-3. Test with: `hulud-scan --threat my-threat --dir /path/to/project`
+3. Test with: `package-scan --threat my-threat --dir /path/to/project`
 4. The threat will automatically be included in default scans (no --threat flag)
 
 ## Performance Considerations

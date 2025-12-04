@@ -544,7 +544,7 @@ class HuludScanner:
             print("       - pnpm:  package.json → " + click.style('"pnpm.overrides"', fg='green'))
             print(click.style("   • After changes:", fg='cyan') + " run a full install and test cycle.\n")
 
-    def save_report(self, output_file: str = "hulud_scan_report.json", relative_paths: bool = False):
+    def save_report(self, output_file: str = "package_scan_report.json", relative_paths: bool = False):
         """Save findings to JSON file"""
         try:
             # Prepare findings for JSON without verbose per-finding remediation notes
@@ -647,7 +647,7 @@ class HuludScanner:
     "--output",
     "output_file",
     type=click.Path(writable=True, dir_okay=False, path_type=str),
-    default="hulud_scan_report.json",
+    default="package_scan_report.json",
     show_default=True,
     help="File to write JSON report",
 )

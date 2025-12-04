@@ -3,12 +3,12 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "hulud-scan"
-version = "0.2.0"
+name = "package-scan"
+version = "0.3.0"
 description = "Multi-ecosystem package threat scanner (npm, Maven/Gradle, pip, gem)"
 readme = "README.md"
 requires-python = ">=3.8"
-authors = [{ name = "Hulud Security" }]
+authors = [{ name = "Package Scan Security" }]
 license = { text = "MIT" }
 dependencies = [
   "click>=8.1",
@@ -28,9 +28,10 @@ python = ["packaging>=21.0", "toml>=0.10"]
 all = ["pyyaml>=6.0", "lxml>=4.9", "packaging>=21.0", "toml>=0.10"]
 
 [project.scripts]
-hulud-scan = "hulud_scan.cli:cli"
-npm-scan = "hulud_scan.cli:npm_scan_cli"
+package-scan = "package_scan.cli:cli"
+hulud-scan = "package_scan.cli:cli"  # Backward compatibility alias
+npm-scan = "package_scan.cli:npm_scan_cli"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["hulud_scan"]
+packages = ["package_scan"]

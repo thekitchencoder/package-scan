@@ -15,9 +15,9 @@ from pathlib import Path
 from typing import List, Optional
 import click
 
-from hulud_scan.core import ThreatDatabase, ReportEngine
-from hulud_scan.adapters import get_adapter_class, get_available_ecosystems, ADAPTER_REGISTRY
-from hulud_scan.adapters.base import ProgressSpinner
+from package_scan.core import ThreatDatabase, ReportEngine
+from package_scan.adapters import get_adapter_class, get_available_ecosystems, ADAPTER_REGISTRY
+from package_scan.adapters.base import ProgressSpinner
 
 
 def resolve_threats_dir() -> Path:
@@ -142,7 +142,7 @@ def filter_available_ecosystems(requested: List[str]) -> List[str]:
     "--output",
     "output_file",
     type=click.Path(writable=True, dir_okay=False, path_type=str),
-    default="hulud_scan_report.json",
+    default="package_scan_report.json",
     show_default=True,
     help="File to write JSON report",
 )
@@ -429,7 +429,7 @@ def cli(
     "--output",
     "output_file",
     type=click.Path(writable=True, dir_okay=False, path_type=str),
-    default="hulud_scan_report.json",
+    default="package_scan_report.json",
     show_default=True,
     help="File to write JSON report",
 )

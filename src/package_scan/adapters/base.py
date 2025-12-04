@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 import click
 
-from hulud_scan.core import Finding, ThreatDatabase
+from package_scan.core import Finding, ThreatDatabase
 
 
 class ProgressSpinner:

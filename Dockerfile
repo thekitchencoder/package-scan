@@ -34,7 +34,7 @@ USER scanner
 WORKDIR /workspace
 
 # Set entrypoint to the multi-ecosystem scanner CLI
-ENTRYPOINT ["hulud-scan"]
+ENTRYPOINT ["package-scan"]
 
 # Default: scan current directory (workspace), use relative paths
 # Threats auto-detected from /app/threats/ directory
