@@ -213,39 +213,57 @@ def cli(
     # Resolve threats directory
     threats_dir = resolve_threats_dir()
 
-    # Handle --list-affected-packages-csv (raw CSV dump)
-    # For custom CSV, output that; otherwise output all threats from directory
-    if list_affected_packages_csv:
-        try:
-            if csv_file:
-                # Output custom CSV
-                with open(csv_file, 'r', encoding='utf-8') as f:
-                    sys.stdout.write(f.read())
-            else:
-                # Output all threats from directory
-                csv_files = sorted(threats_dir.glob("*.csv"))
-                if not csv_files:
-                    click.echo(click.style(
-                        f"✗ Error: No threat CSV files found in {threats_dir}",
-                        fg='red', bold=True), err=True)
-                    sys.exit(1)
+    # Load threat database early if --list-affected-packages* flags are used
+    # This ensures --threat arguments are respected
+    if list_affected_packages or list_affected_packages_csv:
+        # Load threat database with respect to --threat arguments
+        threat_db = ThreatDatabase(threats_dir=str(threats_dir))
+        threat_list = list(threat_names) if threat_names else None
 
-                for csv_path in csv_files:
-                    click.echo(f"# {csv_path.stem}")
-                    with open(csv_path, 'r', encoding='utf-8') as f:
-                        sys.stdout.write(f.read())
-                    click.echo()
+        if not threat_db.load_threats(threat_names=threat_list, custom_csv=csv_file):
+            sys.exit(1)
+
+        # Handle --list-affected-packages-csv (raw CSV dump)
+        if list_affected_packages_csv:
+            # Output in CSV format
+            click.echo("ecosystem,name,version")
+            for ecosystem in sorted(threat_db.get_ecosystems()):
+                packages = threat_db.get_all_packages(ecosystem)
+                for pkg_name in sorted(packages.keys()):
+                    for version in sorted(packages[pkg_name]):
+                        click.echo(f"{ecosystem},{pkg_name},{version}")
             sys.exit(0)
-        except FileNotFoundError as e:
-            click.echo(click.style(
-                f"✗ Error: Threat database file not found: {e}",
-                fg='red', bold=True), err=True)
-            sys.exit(1)
-        except Exception as e:
-            click.echo(click.style(
-                f"✗ Error reading threat database: {e}",
-                fg='red', bold=True), err=True)
-            sys.exit(1)
+
+        # Handle --list-affected-packages (formatted display)
+        if list_affected_packages:
+            from collections import defaultdict
+
+            click.echo("\n" + click.style("=" * 80, fg='yellow', bold=True))
+            click.echo(click.style("⚠️  COMPROMISED PACKAGES IN THREAT DATABASE", fg='yellow', bold=True))
+            click.echo(click.style("=" * 80, fg='yellow', bold=True))
+
+            # Show which threats are included
+            if threat_db.get_loaded_threats():
+                threat_list_str = ', '.join(threat_db.get_loaded_threats())
+                click.echo(click.style(f"\n🔎 Threats: {threat_list_str}", fg='cyan', bold=True))
+
+            all_ecosystems = threat_db.get_ecosystems()
+
+            for ecosystem in sorted(all_ecosystems):
+                packages = threat_db.get_all_packages(ecosystem)
+
+                click.echo(f"\n{click.style(f'📦 {ecosystem.upper()}:', fg='magenta', bold=True)}")
+                click.echo(f"   {len(packages)} unique packages, "
+                          f"{threat_db.get_version_count(ecosystem)} versions\n")
+
+                for pkg_name in sorted(packages.keys()):
+                    versions = sorted(packages[pkg_name])
+                    click.echo(f"  {click.style(pkg_name, fg='red', bold=True)}")
+                    for ver in versions:
+                        click.echo(f"    └─ {ver}")
+
+            click.echo(f"\n" + click.style("=" * 80, fg='yellow', bold=True))
+            sys.exit(0)
 
     # Print banner
     click.echo(click.style("=" * 80, fg='cyan', bold=True))
@@ -277,32 +295,6 @@ def cli(
         sys.exit(1)
 
     threat_db.print_summary()
-
-    # Handle --list-affected-packages (formatted display)
-    if list_affected_packages:
-        from collections import defaultdict
-
-        click.echo("\n" + click.style("=" * 80, fg='yellow', bold=True))
-        click.echo(click.style("⚠️  COMPROMISED PACKAGES IN THREAT DATABASE", fg='yellow', bold=True))
-        click.echo(click.style("=" * 80, fg='yellow', bold=True))
-
-        all_ecosystems = threat_db.get_ecosystems()
-
-        for ecosystem in sorted(all_ecosystems):
-            packages = threat_db.get_all_packages(ecosystem)
-
-            click.echo(f"\n{click.style(f'📦 {ecosystem.upper()}:', fg='magenta', bold=True)}")
-            click.echo(f"   {len(packages)} unique packages, "
-                      f"{threat_db.get_version_count(ecosystem)} versions\n")
-
-            for pkg_name in sorted(packages.keys()):
-                versions = sorted(packages[pkg_name])
-                click.echo(f"  {click.style(pkg_name, fg='red', bold=True)}")
-                for ver in versions:
-                    click.echo(f"    └─ {ver}")
-
-        click.echo(f"\n" + click.style("=" * 80, fg='yellow', bold=True))
-        sys.exit(0)
 
     # Determine which ecosystems to scan
     if ecosystems:
