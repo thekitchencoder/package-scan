@@ -2,6 +2,28 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Project Mission
+
+**package-scan is a rapid-response tool for detecting compromised packages during active supply chain attacks.**
+
+This is NOT a comprehensive vulnerability scanner like Snyk or npm audit. It's a focused tool for incident response that prioritizes:
+- **Speed**: Deploy in minutes during active attacks
+- **Simplicity**: CSV-based threat lists, minimal dependencies
+- **Flexibility**: Multi-ecosystem support, easy to extend
+
+**Use package-scan for:**
+- Scanning against lists of compromised packages from emerging attacks
+- Rapid deployment across infrastructure during incidents
+- Sharing threat intelligence via simple CSV files
+
+**Use other tools for:**
+- Ongoing vulnerability monitoring (Snyk, Dependabot)
+- CVE database scanning (npm audit, pip-audit)
+- SBOM generation (Syft, CycloneDX)
+- Static code analysis (Semgrep, CodeQL)
+
+See [ROADMAP.md](ROADMAP.md) for detailed scope and priorities.
+
 ## Project Overview
 
 package-scan is a Python CLI tool for detecting compromised packages across multiple ecosystems. It scans JavaScript (npm), Java (Maven/Gradle), and Python (pip/poetry/pipenv/conda) projects against a CSV database of known compromised packages.
@@ -479,3 +501,333 @@ To add a new threat database:
 - **Path Validation**: Stays within scan directory
 - **No Network**: No external API calls or downloads
 - **Static Analysis**: Threat detection is purely static file parsing
+
+## Testing
+
+### Running Tests
+
+```bash
+# All tests
+pytest
+
+# Specific test file
+pytest tests/test_npm_adapter.py
+
+# With coverage
+pytest --cov=package_scan --cov-report=html
+```
+
+### Test Structure
+
+Comprehensive test suite covering all components:
+
+- **Core Components**:
+  - `tests/test_threat_database.py`: CSV loading, threat filtering, queries
+  - `tests/test_report_engine.py`: Report generation, JSON export, summaries
+  - `tests/test_models.py`: Finding and Remediation data models
+
+- **Ecosystem Adapters**:
+  - `tests/test_npm_adapter.py`: npm/yarn/pnpm scanning and version matching
+  - `tests/test_java_adapter.py`: Maven/Gradle scanning and version ranges
+  - `tests/test_python_adapter.py`: pip/Poetry/Pipenv scanning and PEP 440
+
+- **CLI**:
+  - `tests/test_scanner.py`: Command-line interface tests
+
+### Test Fixtures
+
+Real-world project examples in `examples/`:
+- `examples/test-package/`: npm project with vulnerable packages
+- `examples/test-maven/`: Maven project with Java vulnerabilities
+- `examples/test-gradle/`: Gradle project with Java vulnerabilities
+- `examples/test-python/`: Python project with multiple package managers
+
+## Documentation
+
+### Sphinx Documentation
+
+Build HTML documentation:
+```bash
+cd docs
+make html
+open build/html/index.html
+```
+
+Documentation structure:
+- **introduction.rst**: Project mission and overview
+- **installation.rst**: Multiple installation methods
+- **usage.rst**: Complete CLI examples and Docker usage
+- **architecture.rst**: Detailed technical architecture
+- **contributing.rst**: Development guidelines and PR process
+- **api/**: Complete API reference for core and adapters
+
+### Documentation Files
+
+- **README.md**: Quick start, installation, usage examples
+- **ROADMAP.md**: Project vision, priorities, and future features
+- **CONTRIBUTING.md**: How to contribute, scope, and guidelines
+- **CLAUDE.md**: This file - guidance for AI coding assistants
+- **ARCHITECTURE.md**: Detailed technical architecture documentation
+
+## Project Structure
+
+```
+package-scan/
+├── src/package_scan/          # Source code
+│   ├── cli.py                 # Command-line interface
+│   ├── core/                  # Core components
+│   │   ├── models.py          # Data models
+│   │   ├── threat_database.py # CSV threat loading
+│   │   └── report_engine.py   # Report generation
+│   └── adapters/              # Ecosystem adapters
+│       ├── base.py            # Base adapter interface
+│       ├── npm_adapter.py     # npm/yarn/pnpm
+│       ├── java_adapter.py    # Maven/Gradle
+│       └── python_adapter.py  # pip/Poetry/Pipenv
+├── tests/                     # Unit tests
+│   ├── test_*.py              # Test files
+│   └── __init__.py
+├── docs/                      # Sphinx documentation
+│   ├── source/                # Documentation source files
+│   └── Makefile               # Build documentation
+├── examples/                  # Test fixtures
+│   ├── test-package/          # npm examples
+│   ├── test-maven/            # Maven examples
+│   ├── test-gradle/           # Gradle examples
+│   └── test-python/           # Python examples
+├── threats/                   # Threat databases
+│   ├── sha1-Hulud.csv         # sha1-Hulud worm packages
+│   └── sample-threats.csv     # Test threats
+├── scripts/                   # Utility scripts
+│   ├── tag-and-push.sh        # Docker release script
+│   └── sha1-Hulud-legacy.csv  # Legacy threat database
+├── pyproject.toml             # Package configuration
+├── Dockerfile                 # Docker image build
+├── README.md                  # Project overview
+├── ROADMAP.md                 # Project roadmap
+├── CONTRIBUTING.md            # Contributing guidelines
+└── CLAUDE.md                  # This file
+```
+
+## Recent Project Improvements
+
+### Project Cleanup (December 2025)
+
+- ✅ Moved utility scripts to `scripts/` directory
+- ✅ Removed legacy `scan_npm_threats.py` (functionality in `cli.py`)
+- ✅ Simplified `setup.py` (main config in `pyproject.toml`)
+- ✅ Updated all documentation to reflect rapid-response mission
+
+### Comprehensive Test Suite
+
+- ✅ Unit tests for all core components
+- ✅ Integration tests for all ecosystem adapters
+- ✅ Test fixtures for npm, Maven, Gradle, and Python
+- ✅ 80+ tests covering version matching, CSV parsing, and reporting
+
+### Documentation Overhaul
+
+- ✅ Sphinx documentation with API reference
+- ✅ Complete README rewrite with usage examples
+- ✅ ROADMAP clarifying scope and priorities
+- ✅ CONTRIBUTING guide with detailed instructions
+- ✅ All docs emphasize rapid-response mission vs comprehensive scanning
+
+## Usage Examples for Common Scenarios
+
+### Incident Response: New Attack Discovered
+
+```bash
+# 1. Security vendor publishes compromised package list
+# 2. Create CSV file (my-attack.csv):
+echo "ecosystem,name,version" > my-attack.csv
+echo "npm,malicious-package,1.0.0" >> my-attack.csv
+echo "maven,com.evil:library,2.0.0" >> my-attack.csv
+
+# 3. Scan your infrastructure
+package-scan --csv my-attack.csv --dir /path/to/repos
+
+# 4. Generate report for security team
+package-scan --csv my-attack.csv --output incident-report.json
+```
+
+### CI/CD: Continuous Scanning During Attack
+
+```yaml
+# .github/workflows/security-scan.yml
+name: Supply Chain Scan
+on: [push, pull_request]
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Scan for compromised packages
+        run: |
+          docker run --rm \
+            -v "$PWD:/workspace" \
+            kitchencoder/package-scan:latest \
+            --threat sha1-Hulud \
+            --no-save || exit 1
+```
+
+### Monorepo: Scan Multiple Projects
+
+```bash
+# Scan entire monorepo
+package-scan --dir /path/to/monorepo
+
+# Scan specific service
+package-scan --dir /path/to/monorepo/services/api --ecosystem npm
+
+# Generate per-service reports
+for service in services/*/; do
+  package-scan --dir "$service" --output "${service//\//-}report.json"
+done
+```
+
+### Security Team: Share Threat Intelligence
+
+```bash
+# Export threat database for sharing
+package-scan --list-affected-packages-csv > team-threat-db.csv
+
+# Team members use shared database
+package-scan --csv team-threat-db.csv --dir ~/projects
+
+# Combine multiple threat sources
+cat vendor-threat.csv internal-threat.csv > combined-threats.csv
+package-scan --csv combined-threats.csv
+```
+
+## Integration with Other Tools
+
+### Transform JSON to SARIF (GitHub Code Scanning)
+
+```python
+# Example script: json-to-sarif.py
+import json, sys
+
+with open(sys.argv[1]) as f:
+    scan_results = json.load(f)
+
+sarif = {
+    "version": "2.1.0",
+    "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+    "runs": [{
+        "tool": {"driver": {"name": "package-scan"}},
+        "results": [
+            {
+                "ruleId": f"compromised-{finding['ecosystem']}",
+                "message": {"text": f"Compromised package: {finding['package_name']}@{finding['version']}"},
+                "locations": [{
+                    "physicalLocation": {
+                        "artifactLocation": {"uri": finding['file_path']},
+                        "region": {"startLine": 1}
+                    }
+                }]
+            }
+            for finding in scan_results['findings']
+        ]
+    }]
+}
+
+print(json.dumps(sarif, indent=2))
+```
+
+Usage:
+```bash
+package-scan --output scan.json
+python json-to-sarif.py scan.json > results.sarif
+```
+
+### Slack/Teams Notification
+
+```bash
+# Generate notification message
+FINDINGS=$(package-scan --no-save | grep "Total findings:")
+THREAT_COUNT=$(echo "$FINDINGS" | awk '{print $3}')
+
+if [ "$THREAT_COUNT" -gt 0 ]; then
+  curl -X POST "$SLACK_WEBHOOK" \
+    -H 'Content-Type: application/json' \
+    -d "{\"text\":\"⚠️ Found $THREAT_COUNT compromised packages!\"}"
+fi
+```
+
+## Best Practices
+
+### Creating Threat Databases
+
+1. **Use official sources**: Security vendor advisories, GitHub Security Lab
+2. **Verify package names**: Match exact names for each ecosystem
+3. **Include all versions**: List all known compromised versions
+4. **Document sources**: Add comments or metadata about where threats came from
+5. **Test thoroughly**: Scan known-vulnerable projects to verify detection
+
+### Scanning Workflows
+
+1. **Scan immediately**: When attack is announced, scan infrastructure first
+2. **Scan continuously**: Add to CI/CD during active incident
+3. **Scan comprehensively**: Don't limit to specific ecosystems unless necessary
+4. **Share results**: JSON reports enable team collaboration
+5. **Update regularly**: Refresh threat databases as new information emerges
+
+### Avoiding False Positives
+
+1. **Verify versions**: Ensure CSV has exact versions, not ranges
+2. **Check ecosystem**: npm vs maven vs pip have different naming conventions
+3. **Review findings**: Manual verification of critical findings
+4. **Test with fixtures**: Use `examples/` to verify scanning logic
+
+### Performance Optimization
+
+1. **Use Docker**: Faster than pip install for one-time scans
+2. **Scan selectively**: Use `--ecosystem` to limit scope if needed
+3. **Skip output**: Use `--no-save` in CI/CD to reduce I/O
+4. **Parallel scanning**: Scan multiple repos concurrently
+
+## Troubleshooting
+
+### Tests Failing
+
+```bash
+# Ensure all dependencies installed
+pip install -e ".[all]"
+pip install pytest
+
+# Run specific failing test with verbose output
+pytest tests/test_npm_adapter.py::test_specific_function -v
+
+# Check for import errors
+python -c "from package_scan.core import ThreatDatabase"
+```
+
+### Docker Build Issues
+
+```bash
+# Clean build
+docker build --no-cache -t package-scan .
+
+# Check build logs
+docker build -t package-scan . 2>&1 | tee build.log
+
+# Verify dependencies in image
+docker run --rm package-scan pip list
+```
+
+### Documentation Build Errors
+
+```bash
+# Install documentation dependencies
+pip install -e ".[dev]"
+
+# Clean build
+cd docs
+make clean
+make html
+
+# Check for Sphinx warnings
+make html 2>&1 | grep WARNING
+```
