@@ -1,0 +1,20 @@
+# Test requirements.txt with vulnerable packages
+
+# Exact versions (vulnerable)
+requests==2.8.1
+urllib3==1.25.1
+Django==2.2.3
+Flask==0.12.2
+
+# Version ranges that include vulnerable versions
+PyYAML>=5.1,<5.3
+Jinja2>=2.10,<2.11
+Pillow>=6.0.0,<7.0.0
+
+# Safe packages (not in threat database)
+certifi==2021.5.30
+idna==3.2
+
+# Comments and formatting
+pytest>=6.0  # Testing framework
+black==21.6b0  # Code formatter

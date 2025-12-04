@@ -3,18 +3,20 @@
 from .base import EcosystemAdapter
 from .npm_adapter import NpmAdapter
 from .java_adapter import JavaAdapter
+from .python_adapter import PythonAdapter
 
 __all__ = [
     'EcosystemAdapter',
     'NpmAdapter',
     'JavaAdapter',
+    'PythonAdapter',
 ]
 
 # Registry of available adapters
 ADAPTER_REGISTRY = {
     'npm': NpmAdapter,
     'maven': JavaAdapter,
-    # 'pip': PythonAdapter,   # Coming soon
+    'pip': PythonAdapter,
     # 'gem': RubyAdapter,     # Coming soon
 }
 
