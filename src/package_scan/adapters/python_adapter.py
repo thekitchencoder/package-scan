@@ -17,7 +17,7 @@ class PythonAdapter(EcosystemAdapter):
     Adapter for scanning Python projects
 
     Supports:
-    - pip: requirements.txt, requirements-*.txt
+    - pip: requirements.txt, requirements-\\*.txt
     - Poetry: pyproject.toml, poetry.lock
     - Pipenv: Pipfile, Pipfile.lock
     - conda: environment.yml

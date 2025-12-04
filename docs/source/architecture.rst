@@ -210,7 +210,7 @@ Handles Python package ecosystem.
 
 **Supported Files:**
 
-* requirements.txt, requirements-*.txt
+* requirements.txt, requirements-\*.txt
 * pyproject.toml (Poetry)
 * poetry.lock
 * Pipfile (pipenv)
