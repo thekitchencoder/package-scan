@@ -1,0 +1,126 @@
+{
+  "total_findings": 6,
+  "threats": [
+    "sha1-Hulud"
+  ],
+  "ecosystems": [
+    "npm"
+  ],
+  "findings": [
+    {
+      "ecosystem": "npm",
+      "type": "manifest",
+      "file": "/workspace/examples/test-package/package.json",
+      "package": "@asyncapi/parser",
+      "version": "3.4.1, 3.4.2",
+      "match_type": "range",
+      "version_spec": ">=3.4",
+      "dependency_type": "dependencies",
+      "remediation": {
+        "strategy": "raise_minimum",
+        "suggested_spec": ">=3.4.3",
+        "affected_versions": [
+          "3.4.1",
+          "3.4.2"
+        ]
+      },
+      "metadata": {
+        "included_versions": [
+          "3.4.1",
+          "3.4.2"
+        ]
+      }
+    },
+    {
+      "ecosystem": "npm",
+      "type": "manifest",
+      "file": "/workspace/examples/test-package/package.json",
+      "package": "@lessondesk/babel-preset",
+      "version": "1.0.1",
+      "match_type": "range",
+      "version_spec": "1.0.1",
+      "dependency_type": "dependencies",
+      "remediation": {
+        "strategy": "raise_minimum",
+        "suggested_spec": ">=1.0.2",
+        "affected_versions": [
+          "1.0.1"
+        ]
+      },
+      "metadata": {
+        "included_versions": [
+          "1.0.1"
+        ]
+      }
+    },
+    {
+      "ecosystem": "npm",
+      "type": "lockfile",
+      "file": "/workspace/examples/test-package/package-lock.json",
+      "package": "@accordproject/concerto-analysis",
+      "version": "3.24.1",
+      "match_type": "exact",
+      "remediation": {
+        "strategy": "upgrade_and_update_lockfile",
+        "suggested_spec": ">=3.24.2"
+      },
+      "metadata": {
+        "lockfile_type": "package-lock.json"
+      }
+    },
+    {
+      "ecosystem": "npm",
+      "type": "lockfile",
+      "file": "/workspace/examples/test-package/package-lock.json",
+      "package": "@lessondesk/babel-preset",
+      "version": "1.0.1",
+      "match_type": "exact",
+      "remediation": {
+        "strategy": "upgrade_and_update_lockfile",
+        "suggested_spec": ">=1.0.2"
+      },
+      "metadata": {
+        "lockfile_type": "package-lock.json"
+      }
+    },
+    {
+      "ecosystem": "npm",
+      "type": "lockfile",
+      "file": "/workspace/examples/test-package/yarn.lock",
+      "package": "02-echo",
+      "version": "0.0.7",
+      "match_type": "exact",
+      "remediation": {
+        "strategy": "upgrade_and_update_lockfile",
+        "suggested_spec": ">=0.0.8"
+      },
+      "metadata": {
+        "lockfile_type": "yarn.lock"
+      }
+    },
+    {
+      "ecosystem": "npm",
+      "type": "lockfile",
+      "file": "/workspace/examples/test-package/yarn.lock",
+      "package": "@actbase/css-to-react-native-transform",
+      "version": "1.0.3",
+      "match_type": "exact",
+      "remediation": {
+        "strategy": "upgrade_and_update_lockfile",
+        "suggested_spec": ">=1.0.4"
+      },
+      "metadata": {
+        "lockfile_type": "yarn.lock"
+      }
+    }
+  ],
+  "summary": {
+    "npm": {
+      "total": 6,
+      "manifest": 2,
+      "lockfile": 4,
+      "installed": 0,
+      "unique_packages": 5
+    }
+  }
+}
