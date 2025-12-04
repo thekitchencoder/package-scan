@@ -41,6 +41,29 @@ sys.path.insert(0, os.path.abspath('../../src'))
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
+# Theme options for sphinx_rtd_theme
+html_theme_options = {
+    'display_version': True,
+    'prev_next_buttons_location': 'bottom',
+    'style_external_links': True,
+    'vcs_pageview_mode': '',
+    # Add GitHub link to top of sidebar
+    'collapse_navigation': False,
+    'sticky_navigation': True,
+    'navigation_depth': 4,
+    'includehidden': True,
+    'titles_only': False
+}
+
+# GitHub integration
+html_context = {
+    'display_github': True,
+    'github_user': 'thekitchencoder',
+    'github_repo': 'package-scan',
+    'github_version': 'main',
+    'conf_py_path': '/docs/source/',
+}
+
 # -- Options for todo extension ----------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/extensions/todo.html#configuration
 
