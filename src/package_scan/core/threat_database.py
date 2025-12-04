@@ -45,7 +45,8 @@ class ThreatDatabase:
         Args:
             threat_names: List of threat names to load (e.g., ['sha1-Hulud']).
                 If None, loads all threats from threats/ directory.
-            custom_csv: Path to custom CSV file (overrides threat_names).
+
+            custom_csv: Path to the custom CSV file (overrides threat_names).
 
         Returns:
             True if at least one threat loaded successfully, False otherwise
