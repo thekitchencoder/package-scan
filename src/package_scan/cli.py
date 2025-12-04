@@ -220,7 +220,7 @@ def cli(
         threat_db = ThreatDatabase(threats_dir=str(threats_dir))
         threat_list = list(threat_names) if threat_names else None
 
-        if not threat_db.load_threats(threat_names=threat_list, custom_csv=csv_file):
+        if not threat_db.load_threats(threat_names=threat_list, csv_file=csv_file):
             sys.exit(1)
 
         # Handle --list-affected-packages-csv (raw CSV dump)
@@ -291,7 +291,7 @@ def cli(
     # Convert threat_names tuple to list
     threat_list = list(threat_names) if threat_names else None
 
-    if not threat_db.load_threats(threat_names=threat_list, custom_csv=csv_file):
+    if not threat_db.load_threats(threat_names=threat_list, csv_file=csv_file):
         sys.exit(1)
 
     threat_db.print_summary()

@@ -43,13 +43,13 @@ def temp_project_dir():
 
 def test_adapter_ecosystem_name(threat_db):
     """Test that adapter returns correct ecosystem name."""
-    adapter = NpmAdapter(threat_db)
+    adapter = NpmAdapter(threat_db, Path('.'))
     assert adapter._get_ecosystem_name() == 'npm'
 
 
 def test_detect_projects_with_package_json(temp_project_dir, threat_db):
     """Test detecting projects with package.json."""
-    adapter = NpmAdapter(threat_db)
+    adapter = NpmAdapter(threat_db, Path(temp_project_dir))
 
     # Create a package.json
     package_json = os.path.join(temp_project_dir, 'package.json')
@@ -64,7 +64,7 @@ def test_detect_projects_with_package_json(temp_project_dir, threat_db):
 
 def test_detect_multiple_projects(temp_project_dir, threat_db):
     """Test detecting multiple npm projects in subdirectories."""
-    adapter = NpmAdapter(threat_db)
+    adapter = NpmAdapter(threat_db, Path(temp_project_dir))
 
     # Create multiple package.json files
     for subdir in ['project1', 'project2', 'nested/project3']:
@@ -82,7 +82,7 @@ def test_detect_multiple_projects(temp_project_dir, threat_db):
 
 def test_scan_package_json_exact_match(temp_project_dir, threat_db):
     """Test scanning package.json with exact version match."""
-    adapter = NpmAdapter(threat_db)
+    adapter = NpmAdapter(threat_db, Path(temp_project_dir))
 
     # Create package.json with vulnerable package
     package_json = os.path.join(temp_project_dir, 'package.json')
@@ -106,7 +106,7 @@ def test_scan_package_json_exact_match(temp_project_dir, threat_db):
 
 def test_scan_package_json_range_match(temp_project_dir, threat_db):
     """Test scanning package.json with version range."""
-    adapter = NpmAdapter(threat_db)
+    adapter = NpmAdapter(threat_db, Path(temp_project_dir))
 
     # Create package.json with version range that includes vulnerable version
     package_json = os.path.join(temp_project_dir, 'package.json')
@@ -130,7 +130,7 @@ def test_scan_package_json_range_match(temp_project_dir, threat_db):
 
 def test_scan_package_json_no_match(temp_project_dir, threat_db):
     """Test scanning package.json with safe packages."""
-    adapter = NpmAdapter(threat_db)
+    adapter = NpmAdapter(threat_db, Path(temp_project_dir))
 
     package_json = os.path.join(temp_project_dir, 'package.json')
     with open(package_json, 'w') as f:
@@ -150,7 +150,7 @@ def test_scan_package_json_no_match(temp_project_dir, threat_db):
 
 def test_scan_scoped_package(temp_project_dir, threat_db):
     """Test scanning scoped npm packages."""
-    adapter = NpmAdapter(threat_db)
+    adapter = NpmAdapter(threat_db, Path(temp_project_dir))
 
     package_json = os.path.join(temp_project_dir, 'package.json')
     with open(package_json, 'w') as f:
@@ -169,7 +169,7 @@ def test_scan_scoped_package(temp_project_dir, threat_db):
 
 def test_scan_dev_dependencies(temp_project_dir, threat_db):
     """Test scanning devDependencies."""
-    adapter = NpmAdapter(threat_db)
+    adapter = NpmAdapter(threat_db, Path(temp_project_dir))
 
     package_json = os.path.join(temp_project_dir, 'package.json')
     with open(package_json, 'w') as f:
@@ -188,7 +188,7 @@ def test_scan_dev_dependencies(temp_project_dir, threat_db):
 
 def test_scan_all_dependency_types(temp_project_dir, threat_db):
     """Test scanning all dependency types (dependencies, devDependencies, etc.)."""
-    adapter = NpmAdapter(threat_db)
+    adapter = NpmAdapter(threat_db, Path(temp_project_dir))
 
     package_json = os.path.join(temp_project_dir, 'package.json')
     with open(package_json, 'w') as f:
@@ -210,7 +210,7 @@ def test_scan_all_dependency_types(temp_project_dir, threat_db):
 
 def test_scan_package_lock_json(temp_project_dir, threat_db):
     """Test scanning package-lock.json."""
-    adapter = NpmAdapter(threat_db)
+    adapter = NpmAdapter(threat_db, Path(temp_project_dir))
 
     # Create package-lock.json (v2/v3 format)
     lock_file = os.path.join(temp_project_dir, 'package-lock.json')
@@ -239,7 +239,7 @@ def test_scan_package_lock_json(temp_project_dir, threat_db):
 
 def test_scan_package_lock_v1_format(temp_project_dir, threat_db):
     """Test scanning package-lock.json v1 format."""
-    adapter = NpmAdapter(threat_db)
+    adapter = NpmAdapter(threat_db, Path(temp_project_dir))
 
     lock_file = os.path.join(temp_project_dir, 'package-lock.json')
     with open(lock_file, 'w') as f:
@@ -261,7 +261,7 @@ def test_scan_package_lock_v1_format(temp_project_dir, threat_db):
 
 def test_no_duplicate_findings(temp_project_dir, threat_db):
     """Test that same package in manifest and lockfile doesn't create duplicates."""
-    adapter = NpmAdapter(threat_db)
+    adapter = NpmAdapter(threat_db, Path(temp_project_dir))
 
     # Create both package.json and package-lock.json with same package
     package_json = os.path.join(temp_project_dir, 'package.json')
@@ -290,7 +290,7 @@ def test_no_duplicate_findings(temp_project_dir, threat_db):
 
 def test_invalid_json_handling(temp_project_dir, threat_db, capsys):
     """Test handling of invalid JSON files."""
-    adapter = NpmAdapter(threat_db)
+    adapter = NpmAdapter(threat_db, Path(temp_project_dir))
 
     # Create invalid package.json
     package_json = os.path.join(temp_project_dir, 'package.json')
@@ -304,7 +304,7 @@ def test_invalid_json_handling(temp_project_dir, threat_db, capsys):
 
 def test_missing_package_json(temp_project_dir, threat_db):
     """Test scanning directory without package.json."""
-    adapter = NpmAdapter(threat_db)
+    adapter = NpmAdapter(threat_db, Path(temp_project_dir))
 
     findings = adapter.scan_project(temp_project_dir)
 
@@ -313,7 +313,7 @@ def test_missing_package_json(temp_project_dir, threat_db):
 
 def test_version_range_not_matching(temp_project_dir, threat_db):
     """Test that version ranges that don't include vulnerable version are not flagged."""
-    adapter = NpmAdapter(threat_db)
+    adapter = NpmAdapter(threat_db, Path(temp_project_dir))
 
     package_json = os.path.join(temp_project_dir, 'package.json')
     with open(package_json, 'w') as f:
@@ -331,7 +331,7 @@ def test_version_range_not_matching(temp_project_dir, threat_db):
 
 def test_multiple_vulnerable_versions(temp_project_dir, threat_db):
     """Test package with multiple vulnerable versions."""
-    adapter = NpmAdapter(threat_db)
+    adapter = NpmAdapter(threat_db, Path(temp_project_dir))
 
     package_json = os.path.join(temp_project_dir, 'package.json')
     with open(package_json, 'w') as f:
@@ -352,7 +352,7 @@ def test_multiple_vulnerable_versions(temp_project_dir, threat_db):
 
 def test_get_manifest_files():
     """Test getting list of manifest file names."""
-    adapter = NpmAdapter(ThreatDatabase())
+    adapter = NpmAdapter(ThreatDatabase(), Path('.'))
     manifests = adapter.get_manifest_files()
 
     assert 'package.json' in manifests
@@ -360,7 +360,7 @@ def test_get_manifest_files():
 
 def test_get_lockfile_names():
     """Test getting list of lockfile names."""
-    adapter = NpmAdapter(ThreatDatabase())
+    adapter = NpmAdapter(ThreatDatabase(), Path('.'))
     lockfiles = adapter.get_lockfile_names()
 
     assert 'package-lock.json' in lockfiles

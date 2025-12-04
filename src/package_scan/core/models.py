@@ -8,17 +8,17 @@ from typing import Optional, Dict, Any
 class Remediation:
     """Remediation suggestion for a compromised package"""
     strategy: str  # raise_minimum, upgrade_or_override, upgrade_and_update_lockfile, manual_review
-    suggested_spec: Optional[str] = None
-    note: Optional[str] = None
+    suggested_version: Optional[str] = None
+    notes: Optional[str] = None
     affected_versions: Optional[list] = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization"""
         result = {'strategy': self.strategy}
-        if self.suggested_spec:
-            result['suggested_spec'] = self.suggested_spec
-        if self.note:
-            result['note'] = self.note
+        if self.suggested_version:
+            result['suggested_version'] = self.suggested_version
+        if self.notes:
+            result['notes'] = self.notes
         if self.affected_versions:
             result['affected_versions'] = self.affected_versions
         return result
@@ -55,15 +55,15 @@ class Finding:
         """
         result = {
             'ecosystem': self.ecosystem,
-            'type': self.finding_type,
-            'file': self.file_path,
-            'package': self.package_name,
+            'finding_type': self.finding_type,
+            'file_path': self.file_path,
+            'package_name': self.package_name,
             'version': self.version,
             'match_type': self.match_type,
         }
 
         if self.declared_spec:
-            result['version_spec'] = self.declared_spec
+            result['declared_spec'] = self.declared_spec
 
         if self.dependency_type:
             result['dependency_type'] = self.dependency_type
@@ -71,7 +71,7 @@ class Finding:
         if self.remediation:
             rem_dict = self.remediation.to_dict()
             if not include_note:
-                rem_dict.pop('note', None)
+                rem_dict.pop('notes', None)
             result['remediation'] = rem_dict
 
         # Add any ecosystem-specific metadata
@@ -106,8 +106,8 @@ class Finding:
             rem = legacy['remediation']
             remediation = Remediation(
                 strategy=rem.get('strategy', 'manual_review'),
-                suggested_spec=rem.get('suggested_spec'),
-                note=rem.get('note'),
+                suggested_version=rem.get('suggested_version'),
+                notes=rem.get('notes'),
                 affected_versions=rem.get('affected_versions')
             )
 

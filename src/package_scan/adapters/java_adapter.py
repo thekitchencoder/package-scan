@@ -58,6 +58,9 @@ class JavaAdapter(EcosystemAdapter):
 
     def scan_project(self, project_dir: Path) -> List[Finding]:
         """
+        if isinstance(project_dir, str):
+            project_dir = Path(project_dir)
+
         Scan a single Java project for compromised packages
 
         Args:
@@ -319,8 +322,8 @@ class JavaAdapter(EcosystemAdapter):
                         if version in self.compromised_packages[package_name]:
                             remediation = Remediation(
                                 strategy='upgrade_and_update_lockfile',
-                                suggested_spec=f">={self._next_patch_version(version)}",
-                                note='Update build.gradle/build.gradle.kts to exclude this version, delete gradle.lockfile, then run gradle dependencies --write-locks to regenerate.'
+                                suggested_version=f">={self._next_patch_version(version)}",
+                                notes='Update build.gradle/build.gradle.kts to exclude this version, delete gradle.lockfile, then run gradle dependencies --write-locks to regenerate.'
                             )
 
                             findings.append(Finding(
@@ -489,8 +492,8 @@ class JavaAdapter(EcosystemAdapter):
         next_patch = self._next_patch_version(compromised_version)
         return Remediation(
             strategy='upgrade_version',
-            suggested_spec=next_patch,
-            note='Update the dependency version in pom.xml or build.gradle to a patched version above the compromised one. Run mvn clean install or gradle build to verify.'
+            suggested_version=next_patch,
+            notes='Update the dependency version in pom.xml or build.gradle to a patched version above the compromised one. Run mvn clean install or gradle build to verify.'
         )
 
     def _suggest_remediation_range_java(
@@ -520,7 +523,7 @@ class JavaAdapter(EcosystemAdapter):
 
         return Remediation(
             strategy='update_version_range',
-            suggested_spec=f"[{next_patch},)" if '[' in original_spec else next_patch,
-            note=note,
+            suggested_version=f"[{next_patch},)" if '[' in original_spec else next_patch,
+            notes=note,
             affected_versions=sorted(included_versions)
         )

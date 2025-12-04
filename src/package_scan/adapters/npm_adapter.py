@@ -56,6 +56,9 @@ class NpmAdapter(EcosystemAdapter):
 
     def scan_project(self, project_dir: Path) -> List[Finding]:
         """
+        if isinstance(project_dir, str):
+            project_dir = Path(project_dir)
+
         Scan a single npm project for compromised packages
 
         Args:
@@ -228,8 +231,8 @@ class NpmAdapter(EcosystemAdapter):
                     if version in self.compromised_packages[package_name]:
                         remediation = Remediation(
                             strategy='upgrade_and_update_lockfile',
-                            suggested_spec=f">={self._next_patch_version(version)}",
-                            note='Update the parent package.json to exclude this version, delete lock file and node_modules, then run npm install to regenerate.'
+                            suggested_version=f">={self._next_patch_version(version)}",
+                            notes='Update the parent package.json to exclude this version, delete lock file and node_modules, then run npm install to regenerate.'
                         )
 
                         findings.append(Finding(
@@ -315,8 +318,8 @@ class NpmAdapter(EcosystemAdapter):
                                     if version in self.compromised_packages[package_name]:
                                         remediation = Remediation(
                                             strategy='upgrade_and_update_lockfile',
-                                            suggested_spec=f">={self._next_patch_version(version)}",
-                                            note='Update the parent package.json to exclude this version, delete yarn.lock and node_modules, then run yarn install to regenerate.'
+                                            suggested_version=f">={self._next_patch_version(version)}",
+                                            notes='Update the parent package.json to exclude this version, delete yarn.lock and node_modules, then run yarn install to regenerate.'
                                         )
 
                                         findings.append(Finding(
@@ -389,8 +392,8 @@ class NpmAdapter(EcosystemAdapter):
                         if version in self.compromised_packages[package_name]:
                             remediation = Remediation(
                                 strategy='upgrade_and_update_lockfile',
-                                suggested_spec=f">={self._next_patch_version(version)}",
-                                note='Update the parent package.json to exclude this version, delete pnpm-lock.yaml and node_modules, then run pnpm install to regenerate.'
+                                suggested_version=f">={self._next_patch_version(version)}",
+                                notes='Update the parent package.json to exclude this version, delete pnpm-lock.yaml and node_modules, then run pnpm install to regenerate.'
                             )
 
                             findings.append(Finding(
@@ -486,8 +489,8 @@ class NpmAdapter(EcosystemAdapter):
             if installed_version in self.compromised_packages[package_name]:
                 remediation = Remediation(
                     strategy='upgrade_or_override',
-                    suggested_spec=f">={self._next_patch_version(installed_version)}",
-                    note='Update to a patched version above the compromised one and/or use npm/yarn/pnpm overrides/resolutions to force a safe version. Run a full test cycle.'
+                    suggested_version=f">={self._next_patch_version(installed_version)}",
+                    notes='Update to a patched version above the compromised one and/or use npm/yarn/pnpm overrides/resolutions to force a safe version. Run a full test cycle.'
                 )
 
                 return Finding(
@@ -524,8 +527,8 @@ class NpmAdapter(EcosystemAdapter):
         next_patch = self._next_patch_version(compromised_version)
         return Remediation(
             strategy='raise_minimum',
-            suggested_spec=f">={next_patch}",
-            note='Change the dependency version to a patched release above the compromised one. If using ranges with caret/tilde, bump accordingly. Consider using overrides/resolutions to force a safe version.'
+            suggested_version=f">={next_patch}",
+            notes='Change the dependency version to a patched release above the compromised one. If using ranges with caret/tilde, bump accordingly. Consider using overrides/resolutions to force a safe version.'
         )
 
     def _suggest_remediation_range(
@@ -556,13 +559,13 @@ class NpmAdapter(EcosystemAdapter):
 
             return Remediation(
                 strategy='raise_minimum',
-                suggested_spec=suggested,
-                note=note,
+                suggested_version=suggested,
+                notes=note,
                 affected_versions=sorted(included_versions)
             )
         except Exception:
             return Remediation(
                 strategy='manual_review',
-                suggested_spec=None,
-                note='Unable to compute an automatic safe range. Manually exclude the listed versions by upgrading to a patched release or using overrides.'
+                suggested_version=None,
+                notes='Unable to compute an automatic safe range. Manually exclude the listed versions by upgrading to a patched release or using overrides.'
             )

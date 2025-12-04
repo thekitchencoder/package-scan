@@ -56,6 +56,25 @@ class ReportEngine:
         """Get list of ecosystems with findings"""
         return sorted(set(f.ecosystem for f in self.findings))
 
+    def _generate_summary(self) -> dict:
+        """
+        Generate summary statistics for all ecosystems
+
+        Returns:
+            Dictionary mapping ecosystem names to summary stats
+        """
+        ecosystem_summary = {}
+        for ecosystem in self.get_ecosystems():
+            ecosystem_findings = [f for f in self.findings if f.ecosystem == ecosystem]
+            ecosystem_summary[ecosystem] = {
+                'total': len(ecosystem_findings),
+                'manifest': sum(1 for f in ecosystem_findings if f.finding_type == 'manifest'),
+                'lockfile': sum(1 for f in ecosystem_findings if f.finding_type == 'lockfile'),
+                'installed': sum(1 for f in ecosystem_findings if f.finding_type == 'installed'),
+                'unique_packages': len(set(f.package_name for f in ecosystem_findings))
+            }
+        return ecosystem_summary
+
     def print_report(self):
         """Print formatted console report"""
         click.echo("\n" + click.style("=" * 80, fg='white', bold=True))
@@ -250,19 +269,8 @@ class ReportEngine:
                 'findings': findings_data
             }
 
-            # Group by ecosystem for easier navigation
-            ecosystem_summary = {}
-            for ecosystem in self.get_ecosystems():
-                ecosystem_findings = [f for f in self.findings if f.ecosystem == ecosystem]
-                ecosystem_summary[ecosystem] = {
-                    'total': len(ecosystem_findings),
-                    'manifest': sum(1 for f in ecosystem_findings if f.finding_type == 'manifest'),
-                    'lockfile': sum(1 for f in ecosystem_findings if f.finding_type == 'lockfile'),
-                    'installed': sum(1 for f in ecosystem_findings if f.finding_type == 'installed'),
-                    'unique_packages': len(set(f.package_name for f in ecosystem_findings))
-                }
-
-            report['summary'] = ecosystem_summary
+            # Add ecosystem summary
+            report['summary'] = self._generate_summary()
 
             # Write to file
             with open(output_file, 'w', encoding='utf-8') as f:

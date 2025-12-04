@@ -3,6 +3,7 @@
 import pytest
 import tempfile
 import os
+from pathlib import Path
 from package_scan.adapters.java_adapter import JavaAdapter
 from package_scan.core.threat_database import ThreatDatabase
 
@@ -38,13 +39,13 @@ def temp_project_dir():
 
 def test_adapter_ecosystem_name(threat_db):
     """Test that adapter returns correct ecosystem name."""
-    adapter = JavaAdapter(threat_db)
+    adapter = JavaAdapter(threat_db, Path('.'))
     assert adapter._get_ecosystem_name() == 'maven'
 
 
 def test_detect_maven_project(temp_project_dir, threat_db):
     """Test detecting Maven project with pom.xml."""
-    adapter = JavaAdapter(threat_db)
+    adapter = JavaAdapter(threat_db, Path(temp_project_dir))
 
     pom_xml = os.path.join(temp_project_dir, 'pom.xml')
     with open(pom_xml, 'w') as f:
@@ -58,7 +59,7 @@ def test_detect_maven_project(temp_project_dir, threat_db):
 
 def test_detect_gradle_project(temp_project_dir, threat_db):
     """Test detecting Gradle project with build.gradle."""
-    adapter = JavaAdapter(threat_db)
+    adapter = JavaAdapter(threat_db, Path(temp_project_dir))
 
     build_gradle = os.path.join(temp_project_dir, 'build.gradle')
     with open(build_gradle, 'w') as f:
@@ -71,7 +72,7 @@ def test_detect_gradle_project(temp_project_dir, threat_db):
 
 def test_scan_pom_xml_exact_match(temp_project_dir, threat_db):
     """Test scanning pom.xml with exact version."""
-    adapter = JavaAdapter(threat_db)
+    adapter = JavaAdapter(threat_db, Path(temp_project_dir))
 
     pom_xml = os.path.join(temp_project_dir, 'pom.xml')
     with open(pom_xml, 'w') as f:
@@ -102,7 +103,7 @@ def test_scan_pom_xml_exact_match(temp_project_dir, threat_db):
 
 def test_scan_pom_xml_version_range(temp_project_dir, threat_db):
     """Test scanning pom.xml with Maven version range."""
-    adapter = JavaAdapter(threat_db)
+    adapter = JavaAdapter(threat_db, Path(temp_project_dir))
 
     pom_xml = os.path.join(temp_project_dir, 'pom.xml')
     with open(pom_xml, 'w') as f:
@@ -127,7 +128,7 @@ def test_scan_pom_xml_version_range(temp_project_dir, threat_db):
 
 def test_scan_pom_xml_multiple_dependencies(temp_project_dir, threat_db):
     """Test scanning pom.xml with multiple dependencies."""
-    adapter = JavaAdapter(threat_db)
+    adapter = JavaAdapter(threat_db, Path(temp_project_dir))
 
     pom_xml = os.path.join(temp_project_dir, 'pom.xml')
     with open(pom_xml, 'w') as f:
@@ -162,7 +163,7 @@ def test_scan_pom_xml_multiple_dependencies(temp_project_dir, threat_db):
 
 def test_scan_build_gradle_groovy(temp_project_dir, threat_db):
     """Test scanning build.gradle (Groovy DSL)."""
-    adapter = JavaAdapter(threat_db)
+    adapter = JavaAdapter(threat_db, Path(temp_project_dir))
 
     build_gradle = os.path.join(temp_project_dir, 'build.gradle')
     with open(build_gradle, 'w') as f:
@@ -188,7 +189,7 @@ dependencies {
 
 def test_scan_build_gradle_kotlin(temp_project_dir, threat_db):
     """Test scanning build.gradle.kts (Kotlin DSL)."""
-    adapter = JavaAdapter(threat_db)
+    adapter = JavaAdapter(threat_db, Path(temp_project_dir))
 
     build_gradle_kts = os.path.join(temp_project_dir, 'build.gradle.kts')
     with open(build_gradle_kts, 'w') as f:
@@ -210,7 +211,7 @@ dependencies {
 
 def test_scan_gradle_dynamic_version(temp_project_dir, threat_db):
     """Test scanning Gradle files with dynamic versions."""
-    adapter = JavaAdapter(threat_db)
+    adapter = JavaAdapter(threat_db, Path(temp_project_dir))
 
     build_gradle = os.path.join(temp_project_dir, 'build.gradle')
     with open(build_gradle, 'w') as f:
@@ -229,7 +230,7 @@ dependencies {
 
 def test_maven_version_range_formats(temp_project_dir, threat_db):
     """Test different Maven version range formats."""
-    adapter = JavaAdapter(threat_db)
+    adapter = JavaAdapter(threat_db, Path(temp_project_dir))
 
     test_cases = [
         ('[5.3.0]', True),         # Exactly 5.3.0
@@ -263,7 +264,7 @@ def test_maven_version_range_formats(temp_project_dir, threat_db):
 
 def test_pom_xml_without_namespace(temp_project_dir, threat_db):
     """Test scanning pom.xml without namespace."""
-    adapter = JavaAdapter(threat_db)
+    adapter = JavaAdapter(threat_db, Path(temp_project_dir))
 
     pom_xml = os.path.join(temp_project_dir, 'pom.xml')
     with open(pom_xml, 'w') as f:
@@ -285,7 +286,7 @@ def test_pom_xml_without_namespace(temp_project_dir, threat_db):
 
 def test_invalid_xml_handling(temp_project_dir, threat_db):
     """Test handling of invalid XML."""
-    adapter = JavaAdapter(threat_db)
+    adapter = JavaAdapter(threat_db, Path(temp_project_dir))
 
     pom_xml = os.path.join(temp_project_dir, 'pom.xml')
     with open(pom_xml, 'w') as f:
@@ -298,7 +299,7 @@ def test_invalid_xml_handling(temp_project_dir, threat_db):
 
 def test_missing_version_element(temp_project_dir, threat_db):
     """Test handling dependency without version element."""
-    adapter = JavaAdapter(threat_db)
+    adapter = JavaAdapter(threat_db, Path(temp_project_dir))
 
     pom_xml = os.path.join(temp_project_dir, 'pom.xml')
     with open(pom_xml, 'w') as f:
@@ -320,7 +321,7 @@ def test_missing_version_element(temp_project_dir, threat_db):
 
 def test_get_manifest_files():
     """Test getting list of manifest file names."""
-    adapter = JavaAdapter(ThreatDatabase())
+    adapter = JavaAdapter(ThreatDatabase(), Path('.'))
     manifests = adapter.get_manifest_files()
 
     assert 'pom.xml' in manifests
@@ -330,7 +331,7 @@ def test_get_manifest_files():
 
 def test_get_lockfile_names():
     """Test getting list of lockfile names."""
-    adapter = JavaAdapter(ThreatDatabase())
+    adapter = JavaAdapter(ThreatDatabase(), Path('.'))
     lockfiles = adapter.get_lockfile_names()
 
     assert 'gradle.lockfile' in lockfiles
@@ -338,7 +339,7 @@ def test_get_lockfile_names():
 
 def test_gradle_with_quotes_variations(temp_project_dir, threat_db):
     """Test Gradle dependencies with different quote styles."""
-    adapter = JavaAdapter(threat_db)
+    adapter = JavaAdapter(threat_db, Path(temp_project_dir))
 
     build_gradle = os.path.join(temp_project_dir, 'build.gradle')
     with open(build_gradle, 'w') as f:
@@ -357,7 +358,7 @@ dependencies {
 
 def test_no_dependencies_section(temp_project_dir, threat_db):
     """Test handling pom.xml without dependencies section."""
-    adapter = JavaAdapter(threat_db)
+    adapter = JavaAdapter(threat_db, Path(temp_project_dir))
 
     pom_xml = os.path.join(temp_project_dir, 'pom.xml')
     with open(pom_xml, 'w') as f:

@@ -38,7 +38,7 @@ class ThreatDatabase:
         self._is_loaded = False
 
     def load_threats(self, threat_names: Optional[List[str]] = None,
-                    custom_csv: Optional[str] = None) -> bool:
+                    csv_file: Optional[str] = None) -> bool:
         """
         Load threats by name or from custom CSV
 
@@ -46,16 +46,16 @@ class ThreatDatabase:
             threat_names: List of threat names to load (e.g., ['sha1-Hulud']).
                 If None, loads all threats from threats/ directory.
 
-            custom_csv: Path to the custom CSV file (overrides threat_names).
+            csv_file: Path to custom CSV file (overrides threat_names).
 
         Returns:
             True if at least one threat loaded successfully, False otherwise
         """
         success = False
 
-        if custom_csv:
+        if csv_file:
             # Load custom CSV file
-            if self._load_csv(Path(custom_csv), threat_name='custom'):
+            if self._load_csv(Path(csv_file), threat_name='custom'):
                 success = True
         elif threat_names:
             # Load specific threats by name
@@ -98,7 +98,7 @@ class ThreatDatabase:
         Returns:
             True if loaded successfully, False otherwise
         """
-        return self.load_threats(custom_csv=csv_file)
+        return self.load_threats(csv_file=csv_file)
 
     def _load_csv(self, csv_path: Path, threat_name: str) -> bool:
         """

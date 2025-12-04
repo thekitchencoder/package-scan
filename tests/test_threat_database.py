@@ -70,17 +70,17 @@ def test_load_threats_from_csv(temp_csv_file):
     db.load_threats(csv_file=temp_csv_file)
 
     # Check npm packages
-    assert db.get_compromised_versions('npm', 'left-pad') == ['1.3.0']
-    assert db.get_compromised_versions('npm', '@scope/package') == ['2.0.0']
+    assert db.get_compromised_versions('npm', 'left-pad') == {'1.3.0'}
+    assert db.get_compromised_versions('npm', '@scope/package') == {'2.0.0'}
 
     # Check maven packages
-    assert db.get_compromised_versions('maven', 'org.springframework:spring-core') == ['5.3.0']
+    assert db.get_compromised_versions('maven', 'org.springframework:spring-core') == {'5.3.0'}
 
     # Check pip packages
-    assert db.get_compromised_versions('pip', 'requests') == ['2.8.1']
+    assert db.get_compromised_versions('pip', 'requests') == {'2.8.1'}
 
     # Check non-existent package
-    assert db.get_compromised_versions('npm', 'nonexistent') == []
+    assert db.get_compromised_versions('npm', 'nonexistent') == set()
 
 
 def test_load_legacy_format(legacy_csv_file):
@@ -89,21 +89,21 @@ def test_load_legacy_format(legacy_csv_file):
     db.load(legacy_csv_file)
 
     # Should default to npm ecosystem
-    assert db.get_compromised_versions('npm', 'left-pad') == ['1.3.0']
-    assert db.get_compromised_versions('npm', 'lodash') == ['4.17.20']
+    assert db.get_compromised_versions('npm', 'left-pad') == {'1.3.0'}
+    assert db.get_compromised_versions('npm', 'lodash') == {'4.17.20'}
 
 
 def test_load_specific_threat(temp_threats_dir):
     """Test loading a specific threat by name."""
-    db = ThreatDatabase()
-    db.load_threats(threats_dir=temp_threats_dir, threat_names=['threat1'])
+    db = ThreatDatabase(threats_dir=temp_threats_dir)
+    db.load_threats(threat_names=['threat1'])
 
     # Should only load threat1
-    assert db.get_compromised_versions('npm', 'package1') == ['1.0.0']
-    assert db.get_compromised_versions('maven', 'org.example:lib') == ['2.0.0']
+    assert db.get_compromised_versions('npm', 'package1') == {'1.0.0'}
+    assert db.get_compromised_versions('maven', 'org.example:lib') == {'2.0.0'}
 
     # Should not load threat2
-    assert db.get_compromised_versions('pip', 'django') == []
+    assert db.get_compromised_versions('pip', 'django') == set()
 
     # Check loaded threats
     assert db.get_loaded_threats() == ['threat1']
@@ -111,12 +111,12 @@ def test_load_specific_threat(temp_threats_dir):
 
 def test_load_multiple_threats(temp_threats_dir):
     """Test loading multiple specific threats."""
-    db = ThreatDatabase()
-    db.load_threats(threats_dir=temp_threats_dir, threat_names=['threat1', 'threat2'])
+    db = ThreatDatabase(threats_dir=temp_threats_dir)
+    db.load_threats(threat_names=['threat1', 'threat2'])
 
     # Should load both threats
-    assert db.get_compromised_versions('npm', 'package1') == ['1.0.0']
-    assert db.get_compromised_versions('pip', 'django') == ['3.0.0']
+    assert db.get_compromised_versions('npm', 'package1') == {'1.0.0'}
+    assert db.get_compromised_versions('pip', 'django') == {'3.0.0'}
 
     # Check loaded threats
     loaded = db.get_loaded_threats()
@@ -126,13 +126,13 @@ def test_load_multiple_threats(temp_threats_dir):
 
 def test_load_all_threats_from_directory(temp_threats_dir):
     """Test loading all threats from a directory."""
-    db = ThreatDatabase()
-    db.load_threats(threats_dir=temp_threats_dir)
+    db = ThreatDatabase(threats_dir=temp_threats_dir)
+    db.load_threats()
 
     # Should load all CSV files in directory
-    assert db.get_compromised_versions('npm', 'package1') == ['1.0.0']
-    assert db.get_compromised_versions('maven', 'org.example:lib') == ['2.0.0']
-    assert db.get_compromised_versions('pip', 'django') == ['3.0.0']
+    assert db.get_compromised_versions('npm', 'package1') == {'1.0.0'}
+    assert db.get_compromised_versions('maven', 'org.example:lib') == {'2.0.0'}
+    assert db.get_compromised_versions('pip', 'django') == {'3.0.0'}
 
 
 def test_get_all_packages(temp_csv_file):
@@ -140,13 +140,15 @@ def test_get_all_packages(temp_csv_file):
     db = ThreatDatabase()
     db.load_threats(csv_file=temp_csv_file)
 
-    all_packages = db.get_all_packages()
+    npm_packages = db.get_all_packages(ecosystem='npm')
+    maven_packages = db.get_all_packages(ecosystem='maven')
+    pip_packages = db.get_all_packages(ecosystem='pip')
 
     # Check that all packages are present
-    assert ('npm', 'left-pad') in all_packages
-    assert ('npm', '@scope/package') in all_packages
-    assert ('maven', 'org.springframework:spring-core') in all_packages
-    assert ('pip', 'requests') in all_packages
+    assert 'left-pad' in npm_packages
+    assert '@scope/package' in npm_packages
+    assert 'org.springframework:spring-core' in maven_packages
+    assert 'requests' in pip_packages
 
 
 def test_get_ecosystems(temp_csv_file):
@@ -188,9 +190,9 @@ def test_empty_database():
     """Test behavior with empty database."""
     db = ThreatDatabase()
 
-    assert db.get_compromised_versions('npm', 'any-package') == []
-    assert db.get_all_packages() == []
-    assert db.get_ecosystems() == []
+    assert db.get_compromised_versions('npm', 'any-package') == set()
+    assert db.get_all_packages() == {}
+    assert db.get_ecosystems() == set()
     assert db.get_loaded_threats() == []
 
 
@@ -206,11 +208,11 @@ def test_case_sensitivity():
         db.load_threats(csv_file=temp_path)
 
         # Exact match should work
-        assert db.get_compromised_versions('npm', 'Package-Name') == ['1.0.0']
+        assert db.get_compromised_versions('npm', 'Package-Name') == {'1.0.0'}
 
         # Different case should not match
-        assert db.get_compromised_versions('npm', 'package-name') == []
-        assert db.get_compromised_versions('npm', 'PACKAGE-NAME') == []
+        assert db.get_compromised_versions('npm', 'package-name') == set()
+        assert db.get_compromised_versions('npm', 'PACKAGE-NAME') == set()
     finally:
         if os.path.exists(temp_path):
             os.unlink(temp_path)

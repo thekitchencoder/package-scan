@@ -78,6 +78,9 @@ class PythonAdapter(EcosystemAdapter):
         Returns:
             List of findings
         """
+        if isinstance(project_dir, str):
+            project_dir = Path(project_dir)
+
         findings = []
 
         # 1. Check requirements.txt files (including requirements-*.txt)
@@ -337,8 +340,8 @@ class PythonAdapter(EcosystemAdapter):
                     if version in self.compromised_packages[package_name]:
                         remediation = Remediation(
                             strategy='upgrade_and_update_lockfile',
-                            suggested_spec=f">={self._next_patch_version(version)}",
-                            note='Update pyproject.toml to exclude this version, delete poetry.lock, then run poetry install to regenerate.'
+                            suggested_version=f">={self._next_patch_version(version)}",
+                            notes='Update pyproject.toml to exclude this version, delete poetry.lock, then run poetry install to regenerate.'
                         )
 
                         findings.append(Finding(
@@ -460,8 +463,8 @@ class PythonAdapter(EcosystemAdapter):
                         if version in self.compromised_packages[package_name]:
                             remediation = Remediation(
                                 strategy='upgrade_and_update_lockfile',
-                                suggested_spec=f"=={self._next_patch_version(version)}",
-                                note='Update Pipfile to exclude this version, delete Pipfile.lock, then run pipenv install to regenerate.'
+                                suggested_version=f"=={self._next_patch_version(version)}",
+                                notes='Update Pipfile to exclude this version, delete Pipfile.lock, then run pipenv install to regenerate.'
                             )
 
                             findings.append(Finding(
@@ -710,8 +713,8 @@ class PythonAdapter(EcosystemAdapter):
         next_patch = self._next_patch_version(compromised_version)
         return Remediation(
             strategy='upgrade_version',
-            suggested_spec=f"=={next_patch}",
-            note='Update the package version in requirements.txt, pyproject.toml, Pipfile, or environment.yml to a patched version. Run pip install --upgrade or poetry update.'
+            suggested_version=f"=={next_patch}",
+            notes='Update the package version in requirements.txt, pyproject.toml, Pipfile, or environment.yml to a patched version. Run pip install --upgrade or poetry update.'
         )
 
     def _suggest_remediation_range_python(
@@ -740,7 +743,7 @@ class PythonAdapter(EcosystemAdapter):
 
         return Remediation(
             strategy='update_version_range',
-            suggested_spec=f">={next_patch}",
-            note=note,
+            suggested_version=f">={next_patch}",
+            notes=note,
             affected_versions=sorted(included_versions)
         )
