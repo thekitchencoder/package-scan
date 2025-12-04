@@ -4,34 +4,54 @@ Introduction
 Overview
 --------
 
-**package-scan** is a security scanning tool designed to detect compromised packages in your software projects. It scans multiple package ecosystems (npm, Maven, pip) against a database of known compromised packages from supply chain attacks.
+**package-scan** is a rapid-response tool for detecting compromised packages during active supply chain attacks. When a new attack emerges (like sha1-Hulud or event-stream), security teams need to quickly scan their infrastructure against lists of known compromised packages.
 
-The tool helps you identify:
-
-* Packages affected by specific threats (e.g., sha1-Hulud worm)
-* Vulnerable versions in your dependencies
-* Compromised packages in lockfiles and installed packages
-* Security risks across multiple ecosystems
+**This is NOT a comprehensive vulnerability scanner** like Snyk or npm audit. It's a **focused tool for incident response** that prioritizes speed, simplicity, and flexibility.
 
 Why package-scan?
 -----------------
 
-Supply chain attacks are an increasing threat to software security. Attackers compromise popular packages to distribute malware, steal credentials, or inject backdoors. package-scan helps you:
+**Use package-scan when:**
 
-**Detect Known Threats**
-   Scan your projects against databases of known compromised packages
+* A new supply chain attack is discovered
+* You have a list of compromised packages to check against
+* You need results in minutes, not hours
+* You're scanning multiple ecosystems (npm, Maven, Python)
+* You need to share threat intelligence via simple CSV files
 
-**Multi-Ecosystem Coverage**
-   Single tool for JavaScript, Java, and Python projects
+**Use other tools for:**
 
-**Version Range Analysis**
-   Intelligent matching of version ranges (^1.0.0, [5.0,6.0), >=2.0)
+* Ongoing vulnerability monitoring → Snyk, Dependabot
+* CVE database scanning → npm audit, pip-audit
+* SBOM generation → Syft, CycloneDX
+* Static code analysis → Semgrep, CodeQL
 
-**Automated Scanning**
-   Integrate into CI/CD pipelines for continuous monitoring
+Key Capabilities
+----------------
 
-**Detailed Reports**
-   JSON reports with file locations and remediation suggestions
+**Rapid Deployment**
+   Docker container ready in seconds, pip install in minutes
+
+**Multi-Ecosystem**
+   Scans npm, Maven/Gradle, Python (pip/Poetry/Pipenv/conda)
+
+**Simple Threat Lists**
+   CSV-based format that's easy to create and share
+
+**Version Intelligence**
+   Handles semver ranges (^, ~), Maven ranges ([,)), PEP 440 (>=, ~=)
+
+**CI/CD Ready**
+   JSON output, exit codes, minimal dependencies
+
+The Incident Response Workflow
+-------------------------------
+
+1. **Attack Announced**: Security vendor publishes compromised package list
+2. **Create Threat CSV**: Format packages as ``ecosystem,name,version``
+3. **Deploy Scanner**: Use Docker for rapid deployment across infrastructure
+4. **Scan Projects**: Identify which codebases are affected
+5. **Share Results**: JSON reports for team analysis and remediation
 
 Supported Ecosystems
 --------------------

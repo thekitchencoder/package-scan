@@ -1,236 +1,445 @@
-# hulud-scan
+# package-scan
 
-NPM Package Threat Scanner for identifying projects impacted by the HULUD worm. This tool scans `package.json` files, lock files (`package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`), and installed packages in `node_modules` to flag known compromised packages from a provided CSV list.
+**Rapid-response supply chain attack scanner** for detecting compromised packages during active security incidents.
+
+When a new supply chain attack emerges (like the sha1-Hulud worm or event-stream incident), security teams need to **quickly scan their infrastructure** against lists of known compromised packages. `package-scan` fills this critical gap—it's not a replacement for comprehensive vulnerability scanners like Snyk or npm audit, but a **focused tool for rapid incident response**.
+
+## Why package-scan?
+
+**✅ Use package-scan when:**
+- A new supply chain attack is discovered
+- You have a list of compromised packages to check against
+- You need results in minutes, not hours
+- You're scanning multiple ecosystems (npm, Maven, Python)
+- You need to share threat intelligence via simple CSV files
+
+**❌ Use other tools for:**
+- Ongoing vulnerability monitoring → Snyk, Dependabot
+- CVE database scanning → npm audit, pip-audit
+- SBOM generation → Syft, CycloneDX
+- Static code analysis → Semgrep, CodeQL
+
+## Key Features
+
+- **Multi-ecosystem**: Scans npm, Maven/Gradle, Python (pip/Poetry/Pipenv/conda)
+- **Rapid deployment**: Docker container or pip install
+- **Simple threat lists**: CSV-based, easy to create and share
+- **Version intelligence**: Handles semver ranges, Maven ranges, PEP 440 specifiers
+- **CI/CD ready**: JSON output, exit codes, Docker support
+
+## Quick Start
+
+### Using Docker (Recommended for rapid deployment)
+
+```bash
+# Pull the latest image
+docker pull kitchencoder/package-scan:latest
+
+# Scan your current directory (all ecosystems, all threats)
+docker run --rm -v "$(pwd):/workspace" kitchencoder/package-scan:latest
+
+# Scan for specific threat (e.g., sha1-Hulud worm)
+docker run --rm -v "$(pwd):/workspace" kitchencoder/package-scan:latest --threat sha1-Hulud
+
+# Scan specific ecosystem only
+docker run --rm -v "$(pwd):/workspace" kitchencoder/package-scan:latest --ecosystem npm
+```
+
+### Using pip
+
+```bash
+# Install
+pip install -e .
+
+# Scan current directory
+package-scan
+
+# Scan for specific threat
+package-scan --threat sha1-Hulud
+
+# Scan specific ecosystem
+package-scan --ecosystem maven
+
+# Use custom threat CSV
+package-scan --csv /path/to/threat-list.csv
+```
 
 ## Installation
 
-1.  Create and activate a virtual environment (recommended):
+### Docker (Recommended)
 
-    ```bash
-    python3 -m venv .venv
-    source .venv/bin/activate  # Windows: .venv\Scripts\activate
-    ```
+Pre-built images are available on Docker Hub:
 
-2.  Install the package in editable mode (installs dependencies like `click` automatically):
+```bash
+docker pull kitchencoder/package-scan:latest
+```
 
-    ```bash
-    pip install -e .
-    ```
+Or build locally:
 
-3.  Verify the CLI is available:
+```bash
+docker build -t package-scan .
+```
 
-    ```bash
-    npm-scan --help
-    ```
+### Python Package
 
-## Docker Installation (Alternative)
+1. Create virtual environment:
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate  # Windows: venv\Scripts\activate
+   ```
 
-Run the scanner as a Docker container without installing Python locally.
+2. Install with all ecosystem support:
+   ```bash
+   pip install -e ".[all]"
+   ```
 
-1.  Build the Docker image:
+   Or install for specific ecosystems:
+   ```bash
+   pip install -e ".[pnpm]"    # pnpm/conda support
+   pip install -e ".[java]"     # Maven/Gradle support
+   pip install -e ".[python]"   # Python ecosystem support
+   ```
 
-    ```bash
-    docker build -t hulud-scan .
-    ```
-
-2.  Run the scanner (simple - just mount your project):
-
-    ```bash
-    # Scan current directory - super simple!
-    docker run --rm -v "$(pwd):/workspace" hulud-scan
-
-    # That's it! The report is saved as ./hulud_scan_report.json
-    ```
-
-3.  Advanced usage:
-
-    ```bash
-    # Custom output filename
-    docker run --rm -v "$(pwd):/workspace" hulud-scan --output my-report.json
-
-    # Scan subdirectory
-    docker run --rm -v "$(pwd):/workspace" hulud-scan --dir ./src
-
-    # Use custom CSV
-    docker run --rm -v "$(pwd):/workspace" hulud-scan --csv /workspace/custom.csv
-
-    # No report file (stdout only)
-    docker run --rm -v "$(pwd):/workspace" hulud-scan --no-save
-    ```
-
-**How it works:**
-
--   Mount your project to `/workspace` (single volume, simple!)
--   Scanner automatically finds CSV in container
--   Report saved directly in your mounted directory
--   No need to specify paths like `/workspace/` - just use filenames
-
-**Docker features:**
-
--   Based on `python:3.11-slim` (secure, minimal base)
--   Runs as non-root user for security
--   Includes default `sha1-Hulud.csv`
--   All dependencies pre-installed (including PyYAML for pnpm support)
--   ~235MB image size
+3. Verify installation:
+   ```bash
+   package-scan --help
+   package-scan --list-ecosystems
+   ```
 
 ## Usage
 
-Basic scan of the current directory using `./sha1-Hulud.csv` and writing `hulud_scan_report.json`:
+### Basic Scanning
 
 ```bash
-npm-scan
+# Scan current directory (all ecosystems, all threats)
+package-scan
+
+# Scan specific directory
+package-scan --dir /path/to/project
+
+# Scan for specific threat
+package-scan --threat sha1-Hulud
+
+# Scan specific ecosystem
+package-scan --ecosystem npm
+package-scan --ecosystem maven,pip  # Multiple ecosystems
 ```
 
-Scan a specific project directory and write a custom output file:
+### Threat Management
 
 ```bash
-npm-scan --dir /path/to/project --csv /path/to/sha1-Hulud.csv --output /tmp/report.json
+# List available ecosystems
+package-scan --list-ecosystems
+
+# List all compromised packages in database
+package-scan --list-affected-packages
+
+# Export threat database as CSV
+package-scan --list-affected-packages-csv > my-threats.csv
+
+# Use custom threat CSV
+package-scan --csv /path/to/custom-threats.csv
 ```
 
-Scan without saving a JSON report (prints findings to stdout only):
+### Output Options
 
 ```bash
-npm-scan --dir . --no-save
+# Custom output file
+package-scan --output scan-results.json
+
+# No JSON file (console only)
+package-scan --no-save
+
+# Relative paths in output
+package-scan --output-relative-paths
 ```
 
-List all compromised packages in the threat database:
+### Docker Examples
 
 ```bash
-npm-scan --list-affected-packages
+# Scan with custom threat CSV
+docker run --rm \
+  -v "$(pwd):/workspace" \
+  -v "/path/to/custom.csv:/app/custom.csv" \
+  kitchencoder/package-scan:latest --csv /app/custom.csv
 
-# Or with Docker
-docker run --rm hulud-scan --list-affected-packages
+# CI/CD: Exit with error if threats found
+docker run --rm -v "$(pwd):/workspace" kitchencoder/package-scan:latest --no-save || exit 1
+
+# Scan monorepo subdirectory
+docker run --rm -v "$(pwd):/workspace" kitchencoder/package-scan:latest --dir /workspace/services/api
 ```
 
-Export the threat database as CSV (useful for piping to files or other tools):
+## CLI Options
 
-```bash
-# Save to file
-npm-scan --list-affected-packages-csv > threats.csv
+- `--dir PATH`: Directory to scan (default: current directory)
+- `--threat NAME`: Scan for specific threat (can be repeated)
+- `--csv FILE`: Use custom threat CSV file
+- `--ecosystem LIST`: Comma-separated list of ecosystems to scan
+- `--output FILE`: JSON report filename (default: `package_scan_report.json`)
+- `--no-save`: Don't write JSON report
+- `--output-relative-paths`: Use relative paths in JSON output
+- `--list-ecosystems`: List supported ecosystems and exit
+- `--list-affected-packages`: Display compromised packages and exit
+- `--list-affected-packages-csv`: Output threat database as CSV
 
-# With Docker
-docker run --rm hulud-scan --list-affected-packages-csv > threats.csv
+## Threat CSV Format
 
-# Pipe to other tools
-docker run --rm hulud-scan --list-affected-packages-csv | grep "package-name"
+Threat databases use a simple CSV format with three columns:
+
+```csv
+ecosystem,name,version
+npm,left-pad,1.3.0
+npm,@scope/package,2.0.0
+maven,org.springframework:spring-core,5.3.0
+maven,org.apache.logging.log4j:log4j-core,2.14.1
+pip,requests,2.8.1
+pip,django,3.0.0
 ```
 
-### CLI Options
+**Package naming conventions:**
+- **npm**: Package name as-is (supports `@scope/package`)
+- **maven**: `groupId:artifactId` format
+- **pip**: Lowercase package name (PyPI convention)
 
--   `--dir PATH`: Root directory to scan recursively. Defaults to the current working directory.
--   `--csv FILE`: Path to CSV containing compromised packages (HULUD list). Defaults to `./sha1-Hulud.csv`.
-    -   If the specified CSV path does not exist, the CLI will also try `${--dir}/sha1-Hulud.csv` automatically.
--   `--output FILE`: Path to write the JSON report. Defaults to `hulud_scan_report.json`.
--   `--no-save`: Do not write a JSON report to disk; only print results.
--   `--output-relative-paths`: Use relative paths in JSON output instead of absolute paths (auto-enabled in Docker).
--   `--list-affected-packages`: Display the full list of compromised packages from the threat database and exit (useful for inspecting the embedded CSV).
--   `--list-affected-packages-csv`: Output the threat database as raw CSV to stdout and exit (useful for piping to files or other tools).
-
-## CSV Format
-
-The scanner expects a CSV with headers including at least:
-
--   `Package Name`
--   `Version`
-
-Example rows:
-
+**Legacy format** (npm-only) is still supported:
 ```csv
 Package Name,Version
 left-pad,1.3.0
-some-package,2.0.1
 ```
 
 ## What Gets Scanned
 
-The tool performs comprehensive scanning in three phases:
+The scanner detects and analyzes multiple ecosystems:
 
-1.  **`package.json` files**: Checks declared dependency ranges to identify if they could install compromised versions
-2.  **Lock files**: Parses exact resolved versions from:
-    -   `package-lock.json` (npm) - supports all lockfile versions
-    -   `yarn.lock` (Yarn)
-    -   `pnpm-lock.yaml` (pnpm) - requires `pip install pyyaml`
-3.  **`node_modules` directories**: Scans actually installed packages
+### npm Ecosystem
+- **Manifests**: package.json (dependencies, devDependencies, etc.)
+- **Lockfiles**: package-lock.json (v1/v2/v3), yarn.lock, pnpm-lock.yaml
+- **Installed**: node_modules/ directories
+- **Version matching**: npm semver (^1.0.0, ~1.2.0, >=2.0.0, etc.)
 
-Lock file scanning is particularly valuable because it:
+### Maven/Gradle Ecosystem
+- **Manifests**: pom.xml, build.gradle, build.gradle.kts
+- **Lockfiles**: gradle.lockfile
+- **Version matching**: Maven ranges ([1.0,2.0)), Gradle dynamic (1.2.+)
 
--   Shows exact versions that will be installed (not just ranges)
--   Reveals transitive dependencies not visible in package.json
--   Detects compromised packages even if they're not directly declared
+### Python Ecosystem
+- **Manifests**: requirements.txt, pyproject.toml, Pipfile, environment.yml
+- **Lockfiles**: poetry.lock, Pipfile.lock
+- **Version matching**: PEP 440 specifiers (==, >=, ~=, etc.)
+
+The scanner automatically detects which ecosystems are present in your project and scans accordingly.
 
 ## Output
 
--   A human-readable report is printed to the console showing findings grouped by source (package.json, lock files, installed packages).
--   If not using `--no-save`, a JSON report is written (default `hulud_scan_report.json`) with the following structure:
+### Console Output
+
+Findings are grouped by ecosystem and type:
+
+```
+═══════════════════════════════════════════════════════════
+📦 npm Findings
+═══════════════════════════════════════════════════════════
+
+MANIFEST FILES (package.json):
+  /project/package.json
+    left-pad@1.3.0 (declared: ^1.3.0)
+
+LOCK FILES:
+  /project/package-lock.json
+    some-package@2.0.1 (exact match)
+
+═══════════════════════════════════════════════════════════
+☕ maven Findings
+═══════════════════════════════════════════════════════════
+
+MANIFEST FILES (pom.xml):
+  /project/pom.xml
+    org.springframework:spring-core@5.3.0 (declared: [5.0,6.0))
+```
+
+### JSON Output
+
+Default filename: `package_scan_report.json`
 
 ```json
 {
-  "total_findings": 3,
+  "total_findings": 10,
+  "threats": ["sha1-Hulud"],
+  "ecosystems": ["npm", "maven", "pip"],
+  "summary": {
+    "npm": {
+      "total": 5,
+      "manifest": 2,
+      "lockfile": 3,
+      "unique_packages": 4
+    }
+  },
   "findings": [
     {
-      "type": "package.json",
-      "file": "/path/to/project/package.json",
-      "package": "left-pad",
+      "ecosystem": "npm",
+      "finding_type": "manifest",
+      "file_path": "/project/package.json",
+      "package_name": "left-pad",
       "version": "1.3.0",
-      "version_spec": "^1.3.0",
-      "dependency_type": "dependencies"
-    },
-    {
-      "type": "lockfile",
-      "lockfile_type": "package-lock.json",
-      "file": "/path/to/project/package-lock.json",
-      "package": "some-package",
-      "version": "2.0.1",
-      "match_type": "exact"
-    },
-    {
-      "type": "installed",
-      "location": "/path/to/project/node_modules",
-      "package": "left-pad",
-      "version": "1.3.0",
-      "package_path": "/path/to/project/node_modules/left-pad"
+      "match_type": "range",
+      "declared_spec": "^1.3.0",
+      "remediation": {
+        "strategy": "upgrade",
+        "suggested_version": "1.4.0"
+      }
     }
   ]
 }
 ```
 
-## Troubleshooting
+## Use Cases
 
--   `ModuleNotFoundError: No module named 'click'`
-    -   Ensure you installed the project into your active virtual environment: `pip install -e .`
-    -   Verify you activated the venv: `source .venv/bin/activate` (or Windows equivalent).
+### Incident Response
 
--   `package-scan: command not found`
-    -   Confirm the venv is active and `pip install -e .` completed successfully.
-    -   On some shells, you may need to re-activate the venv after installation.
-    -   You can also run via Python directly: `python -m package_scan.cli --help`
+When a new supply chain attack is announced:
 
--   CSV not found
-    -   The tool looks at the path you pass to `--csv`. If not found, it will try `${--dir}/sha1-Hulud.csv`.
-    -   Place the CSV in your scan directory or pass an absolute path.
+1. **Gather threat intelligence**: Collect list of compromised packages from security advisories
+2. **Create threat CSV**: Format as `ecosystem,name,version`
+3. **Deploy scanner**: Use Docker for rapid deployment across infrastructure
+4. **Scan all repos**: Identify which projects are affected
+5. **Share findings**: JSON reports for security team analysis
+
+### CI/CD Integration
+
+Add scanning to your CI pipeline:
+
+```yaml
+# GitHub Actions example
+- name: Scan for supply chain threats
+  run: |
+    docker run --rm -v "$PWD:/workspace" \
+      kitchencoder/package-scan:latest \
+      --threat sha1-Hulud \
+      --no-save || exit 1
+```
+
+### Security Team Workflows
+
+- **Threat database sharing**: Distribute CSV files to development teams
+- **Monorepo scanning**: Scan large codebases across multiple ecosystems
+- **Audit reports**: Generate JSON reports for compliance
+- **Custom integrations**: Transform JSON output for SIEM/ticketing systems
+
+## Creating Threat Databases
+
+When a new attack is discovered:
+
+1. **Gather compromised packages** from security vendor advisories
+2. **Create CSV file** with format:
+   ```csv
+   ecosystem,name,version
+   npm,malicious-package,1.0.0
+   maven,com.evil:library,2.0.0
+   ```
+3. **Test scanning**:
+   ```bash
+   package-scan --csv my-threat.csv --list-affected-packages
+   ```
+4. **Share with team** via git, shared drive, or internal repository
+
+See [ROADMAP.md](ROADMAP.md) for future plans around centralized threat databases.
+
+## Architecture
+
+package-scan uses a modular architecture:
+
+```
+src/package_scan/
+├── cli.py                  # Command-line interface
+├── core/                   # Shared components
+│   ├── models.py           # Data models
+│   ├── threat_database.py  # CSV loading
+│   └── report_engine.py    # Report generation
+└── adapters/               # Ecosystem scanners
+    ├── npm_adapter.py      # npm/yarn/pnpm
+    ├── java_adapter.py     # Maven/Gradle
+    └── python_adapter.py   # pip/Poetry/Pipenv
+```
+
+**Adding new ecosystems** is straightforward—see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ## Development
 
-Run from source without installing globally (still recommended to use a venv):
+### Running from Source
 
 ```bash
+# Clone repository
+git clone https://github.com/thekitchencoder/package-scan.git
+cd package-scan
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install with dev dependencies
+pip install -e ".[dev]"
+
+# Run scanner
 python -m package_scan.cli --help
-python -m package_scan.cli --dir /path/to/project
+
+# Run tests
+pytest
+
+# Build documentation
+cd docs && make html
 ```
 
-The project is packaged via `pyproject.toml` using `setuptools`, with the source code located in the `src` directory. It exposes the console scripts:
-- `package-scan` - Main multi-ecosystem scanner
-- `hulud-scan` - Backward compatibility alias
-- `npm-scan` - Legacy npm-only command (redirects to main CLI with npm ecosystem)
+### Project Structure
 
-Run tests with `pytest` from the project root.
+- **pyproject.toml**: Package configuration
+- **src/package_scan/**: Source code
+- **tests/**: Unit tests
+- **docs/**: Sphinx documentation
+- **threats/**: Built-in threat databases
+- **examples/**: Test fixtures for all ecosystems
 
-## License
+## Troubleshooting
 
-MIT
+**Command not found:**
+- Ensure virtual environment is activated
+- Try: `python -m package_scan.cli --help`
+
+**Missing optional dependencies:**
+- For pnpm: `pip install pyyaml`
+- For Maven: `pip install lxml`
+- For Python ecosystem: `pip install toml packaging`
+- Or install all: `pip install -e ".[all]"`
+
+**No findings when expected:**
+- Check threat CSV format
+- Verify package names match ecosystem conventions
+- Use `--list-affected-packages` to inspect database
 
 ## Contributing
 
-Contributions are welcome! Please read the [contributing guidelines](CONTRIBUTING.md) to get started.
+We welcome contributions! Priorities:
 
-This project and everyone participating in it is governed by the [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
+- **New ecosystem adapters** (Ruby, Rust, Go, .NET)
+- **Threat databases** from real-world attacks
+- **CI/CD examples** for additional platforms
+- **Output format scripts** (SARIF, HTML, etc.)
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines and [ROADMAP.md](ROADMAP.md) for planned features.
+
+## License
+
+MIT License - see [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Built in response to the sha1-Hulud supply chain attack
+- Inspired by the need for rapid incident response tools
+- Thanks to the security community for threat intelligence sharing
+
+## Links
+
+- **Documentation**: See `docs/` directory
+- **Issues**: [GitHub Issues](https://github.com/thekitchencoder/package-scan/issues)
+- **Docker Hub**: [kitchencoder/package-scan](https://hub.docker.com/r/kitchencoder/package-scan)
+- **Roadmap**: [ROADMAP.md](ROADMAP.md)
