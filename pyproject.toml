@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hulud-scan"
-version = "0.1.0"
-description = "NPM Package Threat Scanner for HULUD worm-compromised packages"
+version = "0.2.0"
+description = "Multi-ecosystem package threat scanner (npm, Maven/Gradle, pip, gem)"
 readme = "README.md"
 requires-python = ">=3.8"
 authors = [{ name = "Hulud Security" }]
@@ -22,9 +22,14 @@ dev = [
     "sphinx-rtd-theme>=1.0",
     "myst-parser>=0.18.0",
 ]
+pnpm = ["pyyaml>=6.0"]
+java = ["lxml>=4.9"]
+python = ["packaging>=21.0", "toml>=0.10"]
+all = ["pyyaml>=6.0", "lxml>=4.9", "packaging>=21.0", "toml>=0.10"]
 
 [project.scripts]
-npm-scan = "hulud_scan.scan_npm_threats:cli"
+hulud-scan = "hulud_scan.cli:cli"
+npm-scan = "hulud_scan.cli:npm_scan_cli"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
