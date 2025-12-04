@@ -9,13 +9,7 @@ Base Adapter
    :undoc-members:
    :show-inheritance:
 
-EcosystemAdapter
-~~~~~~~~~~~~~~~~
-
-.. autoclass:: package_scan.adapters.base.EcosystemAdapter
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   This module defines the abstract base class for ecosystem adapters.
 
 NPM Adapter
 -----------
@@ -25,13 +19,7 @@ NPM Adapter
    :undoc-members:
    :show-inheritance:
 
-NpmAdapter
-~~~~~~~~~~
-
-.. autoclass:: package_scan.adapters.npm_adapter.NpmAdapter
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   This adapter handles JavaScript/Node.js ecosystem scanning (npm, yarn, pnpm).
 
 Java Adapter
 ------------
@@ -41,13 +29,7 @@ Java Adapter
    :undoc-members:
    :show-inheritance:
 
-JavaAdapter
-~~~~~~~~~~~
-
-.. autoclass:: package_scan.adapters.java_adapter.JavaAdapter
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   This adapter handles Maven and Gradle ecosystem scanning.
 
 Python Adapter
 --------------
@@ -57,10 +39,4 @@ Python Adapter
    :undoc-members:
    :show-inheritance:
 
-PythonAdapter
-~~~~~~~~~~~~~
-
-.. autoclass:: package_scan.adapters.python_adapter.PythonAdapter
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   This adapter handles Python ecosystem scanning (pip, Poetry, Pipenv, conda).

@@ -9,21 +9,7 @@ Models
    :undoc-members:
    :show-inheritance:
 
-Finding
-~~~~~~~
-
-.. autoclass:: package_scan.core.models.Finding
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Remediation
-~~~~~~~~~~~
-
-.. autoclass:: package_scan.core.models.Remediation
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   This module contains data models for findings and remediation suggestions.
 
 Threat Database
 ---------------
@@ -33,13 +19,7 @@ Threat Database
    :undoc-members:
    :show-inheritance:
 
-ThreatDatabase
-~~~~~~~~~~~~~~
-
-.. autoclass:: package_scan.core.threat_database.ThreatDatabase
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   This module manages the threat database with multi-ecosystem support.
 
 Report Engine
 -------------
@@ -49,10 +29,4 @@ Report Engine
    :undoc-members:
    :show-inheritance:
 
-ReportEngine
-~~~~~~~~~~~~
-
-.. autoclass:: package_scan.core.report_engine.ReportEngine
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   This module generates reports from scan findings.
