@@ -148,6 +148,15 @@ package-scan --list-affected-packages-csv > my-threats.csv
 
 # Use custom threat CSV
 package-scan --csv /path/to/custom-threats.csv
+
+# Validate threat CSV before use
+threat-db validate --file /path/to/custom-threats.csv
+
+# Validate with strict ecosystem checking
+threat-db validate --file threats.csv --strict
+
+# Validate with verbose output (shows all warnings)
+threat-db validate --file threats.csv --verbose
 ```
 
 ### Output Options
@@ -217,6 +226,52 @@ pip,django,3.0.0
 ```csv
 Package Name,Version
 left-pad,1.3.0
+```
+
+### Validating Threat Files
+
+Before using a custom threat CSV file, you can validate it to ensure proper formatting:
+
+```bash
+threat-db validate --file my-threats.csv
+```
+
+The validator checks for:
+- ✓ Correct headers (`ecosystem,name,version` or legacy `Package Name,Version`)
+- ✓ Non-empty required fields
+- ✓ Valid ecosystem names (npm, maven, pip, gem)
+- ✓ Proper package name format (e.g., Maven's `groupId:artifactId`)
+- ✓ Valid version strings
+- ✓ Duplicate entries
+
+**Validation modes:**
+- **Normal mode** (default): Warns about unknown ecosystems but passes validation
+- **Strict mode** (`--strict`): Fails validation for unknown ecosystems
+- **Verbose mode** (`--verbose`): Shows all warnings and detailed statistics
+
+Example validation output:
+```
+🔍 THREAT DATABASE VALIDATION
+File: my-threats.csv
+Format: modern
+
+Statistics:
+  Total rows: 150
+  Valid rows: 148
+  Invalid rows: 2
+  Unique entries: 148
+  Unique packages: 95
+  Ecosystems: maven, npm, pip
+
+⚠️  WARNINGS (3):
+  • Line 45 [name]: Maven package should be in 'groupId:artifactId' format: 'log4j-core'
+  • Line 89: Duplicate entry: ecosystem=npm, name=left-pad, version=1.3.0
+
+❌ ERRORS (2):
+  • Line 23 [version]: Version contains whitespace characters: '1.0 .0'
+  • Line 67 [name]: Empty package name
+
+✗ VALIDATION FAILED
 ```
 
 ## What Gets Scanned

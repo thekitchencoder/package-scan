@@ -451,5 +451,51 @@ def npm_scan_cli(
     )
 
 
+@click.group(name="threat-db", help="Threat database management commands")
+def threat_db_cli():
+    """Threat database management command group"""
+    pass
+
+
+@threat_db_cli.command(name="validate", help="Validate threat CSV file format")
+@click.option(
+    "--file",
+    "file_path",
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, path_type=str),
+    required=True,
+    help="Path to threat CSV file to validate"
+)
+@click.option(
+    "--strict",
+    is_flag=True,
+    help="Strict mode: only allow known ecosystems (npm, maven, pip, gem)"
+)
+@click.option(
+    "--verbose",
+    is_flag=True,
+    help="Show all warnings and detailed information"
+)
+def validate_threat_db(file_path: str, strict: bool, verbose: bool):
+    """
+    Validate threat database CSV file
+
+    Checks for:
+    - Correct headers (ecosystem,name,version or Package Name,Version)
+    - Valid field values (non-empty, proper format)
+    - Known ecosystems (in strict mode)
+    - Duplicate entries
+    - Package name format (ecosystem-specific)
+
+    Examples:
+        package-scan threat-db validate --file threats/sha1-Hulud.csv
+        package-scan threat-db validate --file custom-threats.csv --strict
+        package-scan threat-db validate --file threats.csv --verbose
+    """
+    from package_scan.core import validate_threat_file
+
+    success = validate_threat_file(file_path, strict=strict, verbose=verbose)
+    sys.exit(0 if success else 1)
+
+
 if __name__ == "__main__":
     cli()

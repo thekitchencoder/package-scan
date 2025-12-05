@@ -180,6 +180,13 @@ package-scan --list-affected-packages           # Formatted display
 package-scan --list-affected-packages-csv       # Raw CSV output
 ```
 
+**Validate threat CSV files:**
+```bash
+threat-db validate --file /path/to/threats.csv  # Validate threat database format
+threat-db validate --file threats.csv --strict  # Strict mode: fail on unknown ecosystems
+threat-db validate --file threats.csv --verbose # Show all warnings and details
+```
+
 ### Legacy npm-only Command
 
 For backward compatibility, the original `npm-scan` command is still available:
@@ -267,6 +274,15 @@ src/package_scan/
 - Supports legacy format: `Package Name,Version` (defaults to npm)
 - Tracks which threats were loaded for reporting
 - Methods: `load_threats()`, `load()` (legacy), `get_compromised_versions()`, `get_all_packages()`, `get_ecosystems()`, `get_loaded_threats()`
+
+**ThreatValidator** (`core/threat_validator.py`):
+- Validates threat CSV files before use
+- Checks headers, field values, ecosystems, package names, versions
+- Detects duplicates and formatting issues
+- Provides detailed error reporting with line numbers
+- Supports strict mode (fail on unknown ecosystems) and verbose mode
+- CLI command: `threat-db validate --file threats.csv [--strict] [--verbose]`
+- Methods: `validate_file()`, `print_result()`, convenience function `validate_threat_file()`
 
 **ReportEngine** (`core/report_engine.py`):
 - Aggregates findings from all adapters
