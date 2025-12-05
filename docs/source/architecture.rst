@@ -11,7 +11,7 @@ package-scan uses a modular architecture with ecosystem-specific adapters. This 
     src/package_scan/
     ├── cli.py                  # Multi-ecosystem CLI
     ├── core/                   # Shared components
-    │   ├── models.py           # Finding, Remediation dataclasses
+    │   ├── models.py           # Finding dataclass
     │   ├── threat_database.py  # Multi-ecosystem CSV loading
     │   └── report_engine.py    # Unified reporting
     └── adapters/               # Ecosystem-specific scanners
@@ -106,23 +106,12 @@ Standardized data structure for vulnerability findings.
 * ``version``: Compromised version
 * ``match_type``: exact or range
 * ``declared_spec``: Original version specification (optional)
-* ``remediation``: Remediation suggestions (optional)
+* ``metadata``: Ecosystem-specific additional data (optional)
 
 **Methods:**
 
 * ``to_dict()``: Convert to dictionary for JSON export
 * ``from_legacy_npm_dict()``: Convert legacy format
-
-Remediation Model (core/models.py)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Remediation suggestions for findings.
-
-**Fields:**
-
-* ``strategy``: upgrade, remove, pin, or review
-* ``suggested_version``: Recommended version (optional)
-* ``notes``: Additional information (optional)
 
 Ecosystem Adapters
 ------------------
