@@ -4,7 +4,7 @@ FROM python:3.11-slim AS base
 # Metadata
 LABEL maintainer="Hulud Security"
 LABEL description="Multi-Ecosystem Package Threat Scanner (npm, Maven/Gradle, pip)"
-LABEL version="0.3.2"
+LABEL version="0.4.0"
 
 # Create non-root user for security
 RUN groupadd -r scanner && useradd -r -g scanner scanner
