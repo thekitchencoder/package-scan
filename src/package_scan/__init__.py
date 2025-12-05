@@ -11,7 +11,7 @@ except Exception:
     # Fallback for development installs
     __version__ = "0.0.0-dev"
 
-from . import core
 from . import adapters
+from . import core
 
 __all__ = ['core', 'adapters', '__version__']

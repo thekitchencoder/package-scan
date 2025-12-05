@@ -9,7 +9,7 @@ Models
    :undoc-members:
    :show-inheritance:
 
-   This module contains data models for findings and remediation suggestions.
+   This module contains the data model for threat findings.
 
 Threat Database
 ---------------

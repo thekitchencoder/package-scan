@@ -294,11 +294,7 @@ Default filename: `package_scan_report.json`
       "package_name": "left-pad",
       "version": "1.3.0",
       "match_type": "range",
-      "declared_spec": "^1.3.0",
-      "remediation": {
-        "strategy": "upgrade",
-        "suggested_version": "1.4.0"
-      }
+      "declared_spec": "^1.3.0"
     }
   ]
 }

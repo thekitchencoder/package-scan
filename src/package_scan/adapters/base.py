@@ -1,9 +1,10 @@
 """Base adapter interface for ecosystem-specific scanners"""
 
-from abc import ABC, abstractmethod
-from typing import List, Set
-from pathlib import Path
 import sys
+from abc import ABC, abstractmethod
+from pathlib import Path
+from typing import List
+
 import click
 
 from package_scan.core import Finding, ThreatDatabase

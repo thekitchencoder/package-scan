@@ -124,7 +124,6 @@ This tool prioritizes **speed, simplicity, and flexibility** over comprehensive 
 - [ ] Add `--format` flag (json, sarif, html, csv)
 - [ ] Support severity-based filtering in output
 - [ ] Add summary statistics to console output
-- [ ] Improve remediation suggestions
 
 ## Future/Community-Driven Features
 

@@ -1,10 +1,10 @@
 """Threat database management for multi-ecosystem scanning"""
 
 import csv
-import sys
-from typing import Dict, Set, Optional, List
 from collections import defaultdict
 from pathlib import Path
+from typing import Dict, Set, Optional, List
+
 import click
 
 

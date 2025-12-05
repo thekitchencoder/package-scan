@@ -1,11 +1,13 @@
 """Unit tests for ReportEngine."""
 
-import pytest
-import tempfile
 import json
 import os
+import tempfile
+
+import pytest
+
+from package_scan.core.models import Finding
 from package_scan.core.report_engine import ReportEngine
-from package_scan.core.models import Finding, Remediation
 
 
 @pytest.fixture
@@ -19,12 +21,7 @@ def sample_findings():
             package_name='left-pad',
             version='1.3.0',
             match_type='exact',
-            declared_spec='1.3.0',
-            remediation=Remediation(
-                strategy='upgrade',
-                suggested_version='1.4.0',
-                notes='Upgrade to patched version'
-            )
+            declared_spec='1.3.0'
         ),
         Finding(
             ecosystem='npm',
@@ -41,11 +38,7 @@ def sample_findings():
             package_name='org.springframework:spring-core',
             version='5.3.0',
             match_type='range',
-            declared_spec='[5.0,6.0)',
-            remediation=Remediation(
-                strategy='upgrade',
-                suggested_version='5.3.20'
-            )
+            declared_spec='[5.0,6.0)'
         ),
         Finding(
             ecosystem='pip',

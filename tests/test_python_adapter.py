@@ -1,9 +1,11 @@
 """Unit tests for PythonAdapter."""
 
-import pytest
-import tempfile
 import os
+import tempfile
 from pathlib import Path
+
+import pytest
+
 from package_scan.adapters.python_adapter import PythonAdapter
 from package_scan.core.threat_database import ThreatDatabase
 

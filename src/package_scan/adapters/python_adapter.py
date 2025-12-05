@@ -1,15 +1,15 @@
 """Python ecosystem adapter for scanning pip, poetry, pipenv, and conda projects"""
 
+import json
 import os
 import re
-import json
-from typing import List, Dict, Set, Optional, Tuple
 from pathlib import Path
+from typing import List
 
 import click
 
-from package_scan.core import Finding, Remediation, ThreatDatabase
-from .base import EcosystemAdapter, ProgressSpinner
+from package_scan.core import Finding
+from .base import EcosystemAdapter
 
 
 class PythonAdapter(EcosystemAdapter):
@@ -171,8 +171,6 @@ class PythonAdapter(EcosystemAdapter):
                 if version_spec.startswith('=='):
                     version = version_spec[2:].strip()
                     if version in self.compromised_packages[package_name]:
-                        remediation = self._suggest_remediation_exact_python(version)
-
                         findings.append(Finding(
                             ecosystem='pip',
                             finding_type='manifest',
@@ -181,8 +179,7 @@ class PythonAdapter(EcosystemAdapter):
                             version=version,
                             match_type='exact',
                             declared_spec=version_spec,
-                            dependency_type='requirement',
-                            remediation=remediation
+                            dependency_type='requirement'
                         ))
 
                 # Handle version ranges and operators
@@ -191,9 +188,6 @@ class PythonAdapter(EcosystemAdapter):
                         version_spec, package_name)
 
                     if matching_versions:
-                        remediation = self._suggest_remediation_range_python(
-                            version_spec, matching_versions)
-
                         findings.append(Finding(
                             ecosystem='pip',
                             finding_type='manifest',
@@ -203,7 +197,6 @@ class PythonAdapter(EcosystemAdapter):
                             match_type='range',
                             declared_spec=version_spec,
                             dependency_type='requirement',
-                            remediation=remediation,
                             metadata={'included_versions': sorted(matching_versions)}
                         ))
 
@@ -281,9 +274,6 @@ class PythonAdapter(EcosystemAdapter):
                         pep440_spec, package_name)
 
                     if matching_versions:
-                        remediation = self._suggest_remediation_range_python(
-                            version_spec, matching_versions)
-
                         findings.append(Finding(
                             ecosystem='pip',
                             finding_type='manifest',
@@ -293,7 +283,6 @@ class PythonAdapter(EcosystemAdapter):
                             match_type='range' if len(matching_versions) > 1 else 'exact',
                             declared_spec=version_spec,
                             dependency_type=dep_type,
-                            remediation=remediation,
                             metadata={'included_versions': sorted(matching_versions)}
                         ))
 
@@ -338,12 +327,6 @@ class PythonAdapter(EcosystemAdapter):
 
                 if package_name in self.compromised_packages:
                     if version in self.compromised_packages[package_name]:
-                        remediation = Remediation(
-                            strategy='upgrade_and_update_lockfile',
-                            suggested_version=f">={self._next_patch_version(version)}",
-                            notes='Update pyproject.toml to exclude this version, delete poetry.lock, then run poetry install to regenerate.'
-                        )
-
                         findings.append(Finding(
                             ecosystem='pip',
                             finding_type='lockfile',
@@ -351,7 +334,6 @@ class PythonAdapter(EcosystemAdapter):
                             package_name=package_name,
                             version=version,
                             match_type='exact',
-                            remediation=remediation,
                             metadata={'lockfile_type': 'poetry.lock'}
                         ))
 
@@ -412,9 +394,6 @@ class PythonAdapter(EcosystemAdapter):
                         version_spec, package_name)
 
                     if matching_versions:
-                        remediation = self._suggest_remediation_range_python(
-                            version_spec, matching_versions)
-
                         findings.append(Finding(
                             ecosystem='pip',
                             finding_type='manifest',
@@ -424,7 +403,6 @@ class PythonAdapter(EcosystemAdapter):
                             match_type='range' if len(matching_versions) > 1 else 'exact',
                             declared_spec=version_spec,
                             dependency_type=dep_type,
-                            remediation=remediation,
                             metadata={'included_versions': sorted(matching_versions)}
                         ))
 
@@ -461,12 +439,6 @@ class PythonAdapter(EcosystemAdapter):
 
                     if package_name in self.compromised_packages:
                         if version in self.compromised_packages[package_name]:
-                            remediation = Remediation(
-                                strategy='upgrade_and_update_lockfile',
-                                suggested_version=f"=={self._next_patch_version(version)}",
-                                notes='Update Pipfile to exclude this version, delete Pipfile.lock, then run pipenv install to regenerate.'
-                            )
-
                             findings.append(Finding(
                                 ecosystem='pip',
                                 finding_type='lockfile',
@@ -474,7 +446,6 @@ class PythonAdapter(EcosystemAdapter):
                                 package_name=package_name,
                                 version=version,
                                 match_type='exact',
-                                remediation=remediation,
                                 metadata={'lockfile_type': 'Pipfile.lock', 'section': section_name}
                             ))
 
@@ -535,8 +506,6 @@ class PythonAdapter(EcosystemAdapter):
                                     if version_spec.startswith('=='):
                                         version = version_spec[2:].strip()
                                         if version in self.compromised_packages[package_name]:
-                                            remediation = self._suggest_remediation_exact_python(version)
-
                                             findings.append(Finding(
                                                 ecosystem='pip',
                                                 finding_type='manifest',
@@ -545,8 +514,7 @@ class PythonAdapter(EcosystemAdapter):
                                                 version=version,
                                                 match_type='exact',
                                                 declared_spec=version_spec,
-                                                dependency_type='pip-dependency',
-                                                remediation=remediation
+                                                dependency_type='pip-dependency'
                                             ))
                     continue
 
@@ -558,8 +526,6 @@ class PythonAdapter(EcosystemAdapter):
                     if package_name in self.compromised_packages and len(parts) >= 2:
                         version = parts[1]
                         if version in self.compromised_packages[package_name]:
-                            remediation = self._suggest_remediation_exact_python(version)
-
                             findings.append(Finding(
                                 ecosystem='pip',
                                 finding_type='manifest',
@@ -568,8 +534,7 @@ class PythonAdapter(EcosystemAdapter):
                                 version=version,
                                 match_type='exact',
                                 declared_spec=f"={version}",
-                                dependency_type='conda-dependency',
-                                remediation=remediation
+                                dependency_type='conda-dependency'
                             ))
 
         except Exception as e:
@@ -699,51 +664,3 @@ class PythonAdapter(EcosystemAdapter):
             elif v1 > v2:
                 return 1
             return 0
-
-    def _suggest_remediation_exact_python(self, compromised_version: str) -> Remediation:
-        """
-        Suggest remediation for exact version match in Python projects
-
-        Args:
-            compromised_version: The compromised version
-
-        Returns:
-            Remediation object
-        """
-        next_patch = self._next_patch_version(compromised_version)
-        return Remediation(
-            strategy='upgrade_version',
-            suggested_version=f"=={next_patch}",
-            notes='Update the package version in requirements.txt, pyproject.toml, Pipfile, or environment.yml to a patched version. Run pip install --upgrade or poetry update.'
-        )
-
-    def _suggest_remediation_range_python(
-        self, original_spec: str, included_versions: List[str]
-    ) -> Remediation:
-        """
-        Suggest remediation for version range in Python projects
-
-        Args:
-            original_spec: Original version specification
-            included_versions: List of compromised versions
-
-        Returns:
-            Remediation object
-        """
-        # Find highest compromised version
-        highest = max(included_versions, key=lambda v: [int(x) for x in v.split('.')])
-        next_patch = self._next_patch_version(highest)
-
-        note = (
-            "The declared version range includes compromised versions. "
-            "Update requirements.txt, pyproject.toml, Pipfile, or environment.yml "
-            f"to require >={next_patch} or pin to a specific safe version. "
-            "Then regenerate lockfiles and reinstall dependencies."
-        )
-
-        return Remediation(
-            strategy='update_version_range',
-            suggested_version=f">={next_patch}",
-            notes=note,
-            affected_versions=sorted(included_versions)
-        )

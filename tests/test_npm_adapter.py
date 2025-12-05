@@ -1,10 +1,12 @@
 """Unit tests for NpmAdapter."""
 
-import pytest
-import tempfile
-import os
 import json
+import os
+import tempfile
 from pathlib import Path
+
+import pytest
+
 from package_scan.adapters.npm_adapter import NpmAdapter
 from package_scan.core.threat_database import ThreatDatabase
 

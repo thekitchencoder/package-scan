@@ -1,9 +1,10 @@
 """Unit tests for ThreatDatabase."""
 
-import pytest
-import tempfile
 import os
-from pathlib import Path
+import tempfile
+
+import pytest
+
 from package_scan.core.threat_database import ThreatDatabase
 
 

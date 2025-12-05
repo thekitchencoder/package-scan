@@ -13,11 +13,12 @@ import os
 import sys
 from pathlib import Path
 from typing import List, Optional
+
 import click
 
-from package_scan.core import ThreatDatabase, ReportEngine
-from package_scan.adapters import get_adapter_class, get_available_ecosystems, ADAPTER_REGISTRY
+from package_scan.adapters import get_adapter_class, get_available_ecosystems
 from package_scan.adapters.base import ProgressSpinner
+from package_scan.core import ThreatDatabase, ReportEngine
 
 
 def resolve_threats_dir() -> Path:
@@ -230,7 +231,6 @@ def cli(
 
         # Handle --list-affected-packages (formatted display)
         if list_affected_packages:
-            from collections import defaultdict
 
             click.echo("\n" + click.style("=" * 80, fg='yellow', bold=True))
             click.echo(click.style("⚠️  COMPROMISED PACKAGES IN THREAT DATABASE", fg='yellow', bold=True))

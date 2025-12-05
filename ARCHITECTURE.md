@@ -53,7 +53,6 @@ This document describes the modular architecture for hulud-scan, extending it fr
       declared_spec: Optional[str]  # Version spec from manifest
       match_type: str             # exact, range
       dependency_type: Optional[str]  # dependencies, devDependencies, etc.
-      remediation: Dict           # Remediation suggestions
       metadata: Dict              # Ecosystem-specific extra data
   ```
 
@@ -413,7 +412,8 @@ hulud-scan/
 1. **SBOM Support**: Export findings in CycloneDX/SPDX format
 2. **CI/CD Integration**: GitHub Actions, GitLab CI templates
 3. **Severity Scoring**: Add CVSS scores to threat database
-4. **Auto-Remediation**: Generate patches for package.json, pom.xml, etc.
-5. **Web UI**: Interactive dashboard for scan results
-6. **Plugin System**: Allow custom adapters without modifying core
-7. **Differential Scanning**: Only scan changed files in CI
+4. **Web UI**: Interactive dashboard for scan results
+5. **Plugin System**: Allow custom adapters without modifying core
+6. **Differential Scanning**: Only scan changed files in CI
+
+**Note**: Automatic remediation suggestions (version upgrades) are intentionally excluded. During active supply chain attacks, we cannot guarantee that newer versions are safe. The tool focuses on threat detection only.

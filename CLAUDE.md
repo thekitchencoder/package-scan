@@ -248,7 +248,7 @@ The scanner uses a modular architecture with ecosystem-specific adapters:
 src/package_scan/
 ├── cli.py                         # Multi-ecosystem CLI (includes legacy npm-scan command)
 ├── core/                          # Shared components
-│   ├── models.py                  # Finding, Remediation dataclasses
+│   ├── models.py                  # Finding dataclass
 │   ├── threat_database.py         # Multi-ecosystem CSV loading
 │   └── report_engine.py           # Unified reporting
 └── adapters/                      # Ecosystem-specific scanners
@@ -276,7 +276,7 @@ src/package_scan/
 
 **Finding Model** (`core/models.py`):
 - Standardized finding structure across all ecosystems
-- Fields: ecosystem, finding_type (manifest/lockfile/installed), file_path, package_name, version, match_type (exact/range), declared_spec, remediation
+- Fields: ecosystem, finding_type (manifest/lockfile/installed), file_path, package_name, version, match_type (exact/range), declared_spec
 - Converts to dictionary for JSON export
 
 ### Ecosystem Adapters
@@ -448,7 +448,6 @@ Each finding includes:
 - Package name and version
 - Version specification (for manifests)
 - Match type (exact or range)
-- Remediation suggestions (upgrade strategy, suggested version)
 
 ### JSON Output
 
@@ -598,7 +597,7 @@ Comprehensive test suite covering all components:
 - **Core Components**:
   - `tests/test_threat_database.py`: CSV loading, threat filtering, queries
   - `tests/test_report_engine.py`: Report generation, JSON export, summaries
-  - `tests/test_models.py`: Finding and Remediation data models
+  - `tests/test_models.py`: Finding data model
 
 - **Ecosystem Adapters**:
   - `tests/test_npm_adapter.py`: npm/yarn/pnpm scanning and version matching

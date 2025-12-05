@@ -1,9 +1,11 @@
 """Unit tests for JavaAdapter."""
 
-import pytest
-import tempfile
 import os
+import tempfile
 from pathlib import Path
+
+import pytest
+
 from package_scan.adapters.java_adapter import JavaAdapter
 from package_scan.core.threat_database import ThreatDatabase
 

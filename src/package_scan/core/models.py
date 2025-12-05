@@ -5,26 +5,6 @@ from typing import Optional, Dict, Any
 
 
 @dataclass
-class Remediation:
-    """Remediation suggestion for a compromised package"""
-    strategy: str  # raise_minimum, upgrade_or_override, upgrade_and_update_lockfile, manual_review
-    suggested_version: Optional[str] = None
-    notes: Optional[str] = None
-    affected_versions: Optional[list] = None
-
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary for JSON serialization"""
-        result = {'strategy': self.strategy}
-        if self.suggested_version:
-            result['suggested_version'] = self.suggested_version
-        if self.notes:
-            result['notes'] = self.notes
-        if self.affected_versions:
-            result['affected_versions'] = self.affected_versions
-        return result
-
-
-@dataclass
 class Finding:
     """Standardized finding structure across all ecosystems"""
 
@@ -40,19 +20,11 @@ class Finding:
     declared_spec: Optional[str] = None  # Version spec from manifest (if applicable)
     dependency_type: Optional[str] = None  # dependencies, devDependencies, etc.
 
-    # Remediation
-    remediation: Optional[Remediation] = None
-
     # Ecosystem-specific metadata
     metadata: Dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self, include_note: bool = True) -> Dict[str, Any]:
-        """
-        Convert to dictionary for JSON serialization
-
-        Args:
-            include_note: Whether to include remediation notes (omit for JSON reports)
-        """
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for JSON serialization"""
         result = {
             'ecosystem': self.ecosystem,
             'finding_type': self.finding_type,
@@ -67,12 +39,6 @@ class Finding:
 
         if self.dependency_type:
             result['dependency_type'] = self.dependency_type
-
-        if self.remediation:
-            rem_dict = self.remediation.to_dict()
-            if not include_note:
-                rem_dict.pop('notes', None)
-            result['remediation'] = rem_dict
 
         # Add any ecosystem-specific metadata
         if self.metadata:
@@ -100,17 +66,6 @@ class Finding:
 
         finding_type = type_mapping.get(legacy.get('type'), 'unknown')
 
-        # Build remediation if present
-        remediation = None
-        if 'remediation' in legacy and isinstance(legacy['remediation'], dict):
-            rem = legacy['remediation']
-            remediation = Remediation(
-                strategy=rem.get('strategy', 'manual_review'),
-                suggested_version=rem.get('suggested_version'),
-                notes=rem.get('notes'),
-                affected_versions=rem.get('affected_versions')
-            )
-
         # Build metadata
         metadata = {}
         if 'lockfile_type' in legacy:
@@ -131,6 +86,5 @@ class Finding:
             match_type=legacy.get('match_type', 'exact'),
             declared_spec=legacy.get('version_spec'),
             dependency_type=legacy.get('dependency_type'),
-            remediation=remediation,
             metadata=metadata
         )

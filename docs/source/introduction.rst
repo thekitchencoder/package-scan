@@ -51,7 +51,7 @@ The Incident Response Workflow
 2. **Create Threat CSV**: Format packages as ``ecosystem,name,version``
 3. **Deploy Scanner**: Use Docker for rapid deployment across infrastructure
 4. **Scan Projects**: Identify which codebases are affected
-5. **Share Results**: JSON reports for team analysis and remediation
+5. **Share Results**: JSON reports for team analysis and verification
 
 Supported Ecosystems
 --------------------
@@ -111,6 +111,6 @@ How It Works
 1. **Detection**: Scans directories for package manifests and lockfiles
 2. **Parsing**: Extracts package names and versions from various formats
 3. **Matching**: Compares against threat database with intelligent version matching
-4. **Reporting**: Generates detailed findings with file locations and remediation
+4. **Reporting**: Generates detailed findings with file locations and threat details
 
 The scanner uses ecosystem-specific adapters that understand each package manager's file formats and version semantics.

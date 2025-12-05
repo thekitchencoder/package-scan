@@ -297,4 +297,3 @@ Each finding contains:
 * ``version``: Compromised version
 * ``match_type``: exact or range
 * ``declared_spec``: Version specification (for ranges)
-* ``remediation``: Remediation suggestions (if available)

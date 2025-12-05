@@ -52,7 +52,7 @@ Features
 * **Multi-Ecosystem Support**: Scans npm, Maven/Gradle, and Python projects
 * **Threat-Based Scanning**: Target specific supply chain attacks
 * **Version Range Matching**: Detects vulnerable versions in ranges (^, ~, >=, etc.)
-* **Detailed Reporting**: JSON reports with remediation suggestions
+* **Detailed Reporting**: JSON reports with comprehensive threat findings
 * **Modular Architecture**: Easy to extend with new ecosystems
 * **Docker Support**: Containerized scanning for CI/CD pipelines
 

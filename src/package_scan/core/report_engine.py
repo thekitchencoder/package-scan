@@ -2,9 +2,10 @@
 
 import json
 import os
-from typing import List, Dict, Optional
-from pathlib import Path
 from collections import defaultdict
+from pathlib import Path
+from typing import List, Optional
+
 import click
 
 from .models import Finding
@@ -206,14 +207,6 @@ class ReportEngine:
             if 'package_path' in finding.metadata:
                 click.echo(f"  Path: {self._format_path(finding.metadata['package_path'])}")
 
-        # Print remediation
-        if finding.remediation:
-            rem = finding.remediation
-            click.echo(click.style("  Remediation:", fg='cyan'))
-            click.echo(f"    - strategy: {rem.strategy}")
-            if rem.suggested_version:
-                click.echo(f"    - suggested_spec: " + click.style(rem.suggested_version, fg='green', bold=True))
-
     def _print_summary(self):
         """Print overall summary"""
         click.echo(click.style("=" * 80, fg='white', bold=True))
@@ -243,19 +236,13 @@ class ReportEngine:
                           click.style(f"{len(stats['packages'])} packages, {stats['findings']} findings",
                                     fg='magenta', bold=True))
 
-        # Print remediation guidance
+        # Print next steps guidance
         click.echo("\n" + click.style("💡 Next Steps:", fg='cyan', bold=True))
         click.echo(click.style("   1.", fg='cyan') + " Review all findings above")
-        click.echo(click.style("   2.", fg='cyan') + " Update manifests to exclude compromised versions")
-        click.echo(click.style("   3.", fg='cyan') + " Regenerate lockfiles (delete locks and reinstall)")
-        click.echo(click.style("   4.", fg='cyan') + " Run full test suite")
-        click.echo(click.style("   5.", fg='cyan') + " Consider using package manager overrides if needed")
-
-        if any(f.ecosystem == 'npm' for f in self.findings):
-            click.echo(click.style("\n   NPM Overrides:", fg='cyan'))
-            click.echo("   • npm:   package.json → " + click.style('"overrides"', fg='green'))
-            click.echo("   • yarn:  package.json → " + click.style('"resolutions"', fg='green'))
-            click.echo("   • pnpm:  package.json → " + click.style('"pnpm.overrides"', fg='green'))
+        click.echo(click.style("   2.", fg='cyan') + " Check security advisories for safe versions")
+        click.echo(click.style("   3.", fg='cyan') + " Verify replacements are not compromised")
+        click.echo(click.style("   4.", fg='cyan') + " Update manifests to exclude compromised versions")
+        click.echo(click.style("   5.", fg='cyan') + " Regenerate lockfiles after changes")
 
         click.echo()  # Final newline
 
@@ -275,7 +262,7 @@ class ReportEngine:
             # Convert findings to dictionaries
             findings_data = []
             for finding in self.findings:
-                finding_dict = finding.to_dict(include_note=False)
+                finding_dict = finding.to_dict()
 
                 # Convert paths using the same logic as console output
                 for path_field in ['file_path', 'location', 'package_path']:

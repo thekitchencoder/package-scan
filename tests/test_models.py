@@ -1,34 +1,6 @@
-"""Unit tests for Finding and Remediation models."""
+"""Unit tests for Finding model."""
 
-import pytest
-from package_scan.core.models import Finding, Remediation
-
-
-def test_remediation_creation():
-    """Test creating a Remediation object."""
-    rem = Remediation(
-        strategy='upgrade',
-        suggested_version='2.0.0',
-        notes='Critical security fix'
-    )
-
-    assert rem.strategy == 'upgrade'
-    assert rem.suggested_version == '2.0.0'
-    assert rem.notes == 'Critical security fix'
-
-
-def test_remediation_to_dict():
-    """Test converting Remediation to dictionary."""
-    rem = Remediation(
-        strategy='remove',
-        notes='Package is deprecated'
-    )
-
-    result = rem.to_dict()
-
-    assert result['strategy'] == 'remove'
-    assert 'suggested_version' not in result  # Not included when None
-    assert result['notes'] == 'Package is deprecated'
+from package_scan.core.models import Finding
 
 
 def test_finding_creation_minimal():
@@ -49,16 +21,10 @@ def test_finding_creation_minimal():
     assert finding.version == '1.0.0'
     assert finding.match_type == 'exact'
     assert finding.declared_spec is None
-    assert finding.remediation is None
 
 
 def test_finding_creation_full():
     """Test creating a Finding with all fields."""
-    rem = Remediation(
-        strategy='upgrade',
-        suggested_version='1.1.0'
-    )
-
     finding = Finding(
         ecosystem='npm',
         finding_type='manifest',
@@ -66,13 +32,11 @@ def test_finding_creation_full():
         package_name='test-package',
         version='1.0.0',
         match_type='range',
-        declared_spec='^1.0.0',
-        remediation=rem
+        declared_spec='^1.0.0'
     )
 
     assert finding.match_type == 'range'
     assert finding.declared_spec == '^1.0.0'
-    assert finding.remediation == rem
 
 
 def test_finding_to_dict_minimal():
@@ -95,34 +59,6 @@ def test_finding_to_dict_minimal():
     assert result['version'] == '4.17.20'
     assert result['match_type'] == 'exact'
     assert 'declared_spec' not in result  # Not included when None
-    assert 'remediation' not in result  # Not included when None
-
-
-def test_finding_to_dict_with_remediation():
-    """Test converting Finding to dict with remediation."""
-    rem = Remediation(
-        strategy='upgrade',
-        suggested_version='2.0.0',
-        notes='Security patch available'
-    )
-
-    finding = Finding(
-        ecosystem='maven',
-        finding_type='manifest',
-        file_path='/project/pom.xml',
-        package_name='org.springframework:spring-core',
-        version='5.3.0',
-        match_type='range',
-        declared_spec='[5.0,6.0)',
-        remediation=rem
-    )
-
-    result = finding.to_dict()
-
-    assert result['remediation'] is not None
-    assert result['remediation']['strategy'] == 'upgrade'
-    assert result['remediation']['suggested_version'] == '2.0.0'
-    assert result['remediation']['notes'] == 'Security patch available'
 
 
 def test_finding_from_legacy_npm_dict():
@@ -244,20 +180,6 @@ def test_match_types():
     assert finding_range.match_type == 'range'
 
 
-def test_remediation_strategies():
-    """Test different remediation strategies."""
-    strategies = ['upgrade', 'remove', 'pin', 'review']
-
-    for strategy in strategies:
-        rem = Remediation(
-            strategy=strategy,
-            notes=f'Use {strategy} strategy'
-        )
-
-        assert rem.strategy == strategy
-        assert rem.to_dict()['strategy'] == strategy
-
-
 def test_scoped_package_names():
     """Test handling scoped package names."""
     # npm scoped package
@@ -335,19 +257,3 @@ def test_finding_equality():
 
     # Dataclasses should be equal if all fields match
     assert finding1 == finding2
-
-
-def test_finding_with_none_remediation():
-    """Test that None remediation is handled correctly."""
-    finding = Finding(
-        ecosystem='npm',
-        finding_type='manifest',
-        file_path='/project/package.json',
-        package_name='pkg',
-        version='1.0.0',
-        match_type='exact',
-        remediation=None
-    )
-
-    result = finding.to_dict()
-    assert 'remediation' not in result  # Not included when None

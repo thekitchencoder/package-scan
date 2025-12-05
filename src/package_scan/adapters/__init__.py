@@ -1,8 +1,8 @@
 """Ecosystem-specific scanning adapters"""
 
 from .base import EcosystemAdapter
-from .npm_adapter import NpmAdapter
 from .java_adapter import JavaAdapter
+from .npm_adapter import NpmAdapter
 from .python_adapter import PythonAdapter
 
 __all__ = [

@@ -14,7 +14,7 @@ Core Modules
 
 The core modules provide shared functionality used across all ecosystems:
 
-* **models**: Data structures for findings and remediation
+* **models**: Data structure for threat findings
 * **threat_database**: Threat database management
 * **report_engine**: Report generation and formatting
 

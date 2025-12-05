@@ -2,14 +2,14 @@
 
 import os
 import re
-from typing import List, Dict, Set, Optional, Tuple
 from pathlib import Path
+from typing import List
 from xml.etree import ElementTree as ET
 
 import click
 
-from package_scan.core import Finding, Remediation, ThreatDatabase
-from .base import EcosystemAdapter, ProgressSpinner
+from package_scan.core import Finding
+from .base import EcosystemAdapter
 
 
 class JavaAdapter(EcosystemAdapter):
@@ -149,9 +149,6 @@ class JavaAdapter(EcosystemAdapter):
                                 version_spec, package_name)
 
                             if matching_versions:
-                                remediation = self._suggest_remediation_range_java(
-                                    version_spec, matching_versions)
-
                                 findings.append(Finding(
                                     ecosystem='maven',
                                     finding_type='manifest',
@@ -161,14 +158,11 @@ class JavaAdapter(EcosystemAdapter):
                                     match_type='range',
                                     declared_spec=version_spec,
                                     dependency_type='dependency',
-                                    remediation=remediation,
                                     metadata={'included_versions': sorted(matching_versions)}
                                 ))
                         else:
                             # Specific version
                             if version_spec in self.compromised_packages[package_name]:
-                                remediation = self._suggest_remediation_exact_java(version_spec)
-
                                 findings.append(Finding(
                                     ecosystem='maven',
                                     finding_type='manifest',
@@ -177,8 +171,7 @@ class JavaAdapter(EcosystemAdapter):
                                     version=version_spec,
                                     match_type='exact',
                                     declared_spec=version_spec,
-                                    dependency_type='dependency',
-                                    remediation=remediation
+                                    dependency_type='dependency'
                                 ))
 
                 if dependencies:
@@ -248,9 +241,6 @@ class JavaAdapter(EcosystemAdapter):
                             version, package_name)
 
                         if matching_versions:
-                            remediation = self._suggest_remediation_range_java(
-                                version, matching_versions)
-
                             findings.append(Finding(
                                 ecosystem='maven',
                                 finding_type='manifest',
@@ -260,14 +250,11 @@ class JavaAdapter(EcosystemAdapter):
                                 match_type='range',
                                 declared_spec=version,
                                 dependency_type='dependency',
-                                remediation=remediation,
                                 metadata={'included_versions': sorted(matching_versions)}
                             ))
                     else:
                         # Specific version
                         if version in self.compromised_packages[package_name]:
-                            remediation = self._suggest_remediation_exact_java(version)
-
                             findings.append(Finding(
                                 ecosystem='maven',
                                 finding_type='manifest',
@@ -276,8 +263,7 @@ class JavaAdapter(EcosystemAdapter):
                                 version=version,
                                 match_type='exact',
                                 declared_spec=version,
-                                dependency_type='dependency',
-                                remediation=remediation
+                                dependency_type='dependency'
                             ))
 
         except Exception as e:
@@ -320,12 +306,6 @@ class JavaAdapter(EcosystemAdapter):
 
                     if package_name in self.compromised_packages:
                         if version in self.compromised_packages[package_name]:
-                            remediation = Remediation(
-                                strategy='upgrade_and_update_lockfile',
-                                suggested_version=f">={self._next_patch_version(version)}",
-                                notes='Update build.gradle/build.gradle.kts to exclude this version, delete gradle.lockfile, then run gradle dependencies --write-locks to regenerate.'
-                            )
-
                             findings.append(Finding(
                                 ecosystem='maven',
                                 finding_type='lockfile',
@@ -333,7 +313,6 @@ class JavaAdapter(EcosystemAdapter):
                                 package_name=package_name,
                                 version=version,
                                 match_type='exact',
-                                remediation=remediation,
                                 metadata={'lockfile_type': 'gradle.lockfile'}
                             ))
 
@@ -478,52 +457,3 @@ class JavaAdapter(EcosystemAdapter):
                 matching.append(version)
 
         return matching
-
-    def _suggest_remediation_exact_java(self, compromised_version: str) -> Remediation:
-        """
-        Suggest remediation for exact version match in Java projects
-
-        Args:
-            compromised_version: The compromised version
-
-        Returns:
-            Remediation object
-        """
-        next_patch = self._next_patch_version(compromised_version)
-        return Remediation(
-            strategy='upgrade_version',
-            suggested_version=next_patch,
-            notes='Update the dependency version in pom.xml or build.gradle to a patched version above the compromised one. Run mvn clean install or gradle build to verify.'
-        )
-
-    def _suggest_remediation_range_java(
-        self, original_spec: str, included_versions: List[str]
-    ) -> Remediation:
-        """
-        Suggest remediation for version range in Java projects
-
-        Args:
-            original_spec: Original version specification
-            included_versions: List of compromised versions in the range
-
-        Returns:
-            Remediation object
-        """
-        # Find highest compromised version
-        highest = max(included_versions, key=lambda v: [int(x) for x in v.split('.')])
-        next_patch = self._next_patch_version(highest)
-
-        note = (
-            "The declared version range includes compromised versions. "
-            "Update pom.xml or build.gradle to use a version above the compromised range. "
-            "For Maven: update <version> element. "
-            "For Gradle: update version string in dependencies block. "
-            "Then rebuild: mvn clean install or gradle build"
-        )
-
-        return Remediation(
-            strategy='update_version_range',
-            suggested_version=f"[{next_patch},)" if '[' in original_spec else next_patch,
-            notes=note,
-            affected_versions=sorted(included_versions)
-        )
