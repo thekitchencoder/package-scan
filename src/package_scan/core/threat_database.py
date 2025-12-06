@@ -17,17 +17,12 @@ class ThreatDatabase:
     - Loading all threats from threats/ directory
     - Loading custom CSV files
 
-    CSV Format (new):
+    CSV Format:
         ecosystem,name,version
         npm,left-pad,1.3.0
         maven,org.apache.logging.log4j:log4j-core,2.14.1
         pip,requests,2.25.1
         gem,strong_migrations,0.7.9
-
-    CSV Format (legacy, backward compatible):
-        Package Name,Version
-        left-pad,1.3.0
-        (defaults to npm ecosystem)
     """
 
     def __init__(self, threats_dir: str = "threats"):
@@ -88,18 +83,6 @@ class ThreatDatabase:
 
         return success
 
-    def load(self, csv_file: str) -> bool:
-        """
-        Load compromised packages from CSV file (legacy method for backward compatibility)
-
-        Args:
-            csv_file: Path to CSV file
-
-        Returns:
-            True if loaded successfully, False otherwise
-        """
-        return self.load_threats(csv_file=csv_file)
-
     def _load_csv(self, csv_path: Path, threat_name: str) -> bool:
         """
         Load a single CSV file
@@ -124,23 +107,16 @@ class ThreatDatabase:
                     click.echo(click.style(f"✗ Error: CSV file has no headers: {csv_path}", fg='red', bold=True), err=True)
                     return False
 
-                # Detect format
-                if 'ecosystem' in headers and 'name' in headers and 'version' in headers:
-                    self._load_multi_ecosystem_format(reader)
-                elif 'Package Name' in headers and 'Version' in headers:
-                    if threat_name != 'custom':
-                        click.echo(click.style(
-                            f"⚠️  Warning: {threat_name}.csv uses legacy CSV format (Package Name,Version). "
-                            f"Consider upgrading to multi-ecosystem format (ecosystem,name,version).",
-                            fg='yellow'), err=True)
-                    self._load_legacy_format(reader)
-                else:
+                # Check for required headers
+                if not ('ecosystem' in headers and 'name' in headers and 'version' in headers):
                     click.echo(click.style(
-                        f"✗ Error: Unrecognized CSV format in {csv_path}. "
-                        f"Expected headers: 'ecosystem,name,version' or 'Package Name,Version'. "
+                        f"✗ Error: Invalid CSV format in {csv_path}. "
+                        f"Expected headers: 'ecosystem,name,version'. "
                         f"Got: {','.join(headers)}",
                         fg='red', bold=True), err=True)
                     return False
+
+                self._load_multi_ecosystem_format(reader)
 
             self.loaded_threats.append(threat_name)
             return True
@@ -167,28 +143,6 @@ class ThreatDatabase:
                     continue
 
                 self.threats[ecosystem][name].add(version)
-
-            except KeyError as e:
-                click.echo(click.style(
-                    f"⚠️  Warning: Skipping row {row_num} with missing field {e}: {row}",
-                    fg='yellow'), err=True)
-                continue
-
-    def _load_legacy_format(self, reader):
-        """Load CSV in legacy npm-only format, defaulting to npm ecosystem"""
-        for row_num, row in enumerate(reader, start=2):
-            try:
-                name = row['Package Name'].strip()
-                version = row['Version'].strip()
-
-                if not name or not version:
-                    click.echo(click.style(
-                        f"⚠️  Warning: Skipping row {row_num} with empty fields: {row}",
-                        fg='yellow'), err=True)
-                    continue
-
-                # Default to npm ecosystem for backward compatibility
-                self.threats['npm'][name].add(version)
 
             except KeyError as e:
                 click.echo(click.style(

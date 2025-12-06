@@ -222,12 +222,6 @@ pip,django,3.0.0
 - **maven**: `groupId:artifactId` format
 - **pip**: Lowercase package name (PyPI convention)
 
-**Legacy format** (npm-only) is still supported:
-```csv
-Package Name,Version
-left-pad,1.3.0
-```
-
 ### Validating Threat Files
 
 Before using a custom threat CSV file, you can validate it to ensure proper formatting:
@@ -237,7 +231,7 @@ threat-db validate --file my-threats.csv
 ```
 
 The validator checks for:
-- ✓ Correct headers (`ecosystem,name,version` or legacy `Package Name,Version`)
+- ✓ Correct headers (`ecosystem,name,version`)
 - ✓ Non-empty required fields
 - ✓ Valid ecosystem names (npm, maven, pip, gem)
 - ✓ Proper package name format (e.g., Maven's `groupId:artifactId`)

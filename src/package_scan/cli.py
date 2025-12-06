@@ -4,9 +4,9 @@ Multi-Ecosystem Package Threat Scanner
 Scans for compromised packages across npm, Maven/Gradle, pip, and gem ecosystems
 
 CLI usage:
-    hulud-scan --dir /path/to/project --csv /path/to/threats.csv
-    hulud-scan --ecosystem npm,maven
-    npm-scan --dir /path/to/project  # Legacy npm-only mode
+    package-scan --dir /path/to/project --csv /path/to/threats.csv
+    package-scan --ecosystem npm,maven
+    threat-db validate --file /path/to/threats.csv
 """
 
 import os
@@ -109,7 +109,7 @@ def filter_available_ecosystems(requested: List[str]) -> List[str]:
     return filtered
 
 
-@click.command(name="hulud-scan", help="Multi-ecosystem package threat scanner")
+@click.command(name="package-scan", help="Multi-ecosystem package threat scanner")
 @click.option(
     "--dir",
     "scan_dir",
@@ -392,63 +392,6 @@ def cli(
         sys.exit(1)
     else:
         sys.exit(0)
-
-
-# Legacy npm-scan command for backward compatibility
-@click.command(name="npm-scan", help="NPM Package Threat Scanner (legacy compatibility)")
-@click.option(
-    "--dir",
-    "scan_dir",
-    type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=str),
-    default=lambda: os.getcwd(),
-    show_default="current working directory",
-    help="Root directory to scan recursively",
-)
-@click.option(
-    "--csv",
-    "csv_file",
-    type=click.Path(exists=False, file_okay=True, dir_okay=False, path_type=str),
-    default=None,
-    help="Path to CSV containing compromised packages",
-)
-@click.option(
-    "--output",
-    "output_file",
-    type=click.Path(writable=True, dir_okay=False, path_type=str),
-    default="package_scan_report.json",
-    show_default=True,
-    help="File to write JSON report",
-)
-@click.option("--no-save", is_flag=True, help="Do not write JSON report to disk")
-@click.option("--list-affected-packages", is_flag=True, help="Display compromised packages and exit")
-@click.option("--list-affected-packages-csv", is_flag=True, help="Output threat database as CSV and exit")
-def npm_scan_cli(
-    scan_dir: str,
-    csv_file: Optional[str],
-    output_file: str,
-    no_save: bool,
-    list_affected_packages: bool,
-    list_affected_packages_csv: bool
-):
-    """
-    Legacy npm-scan command - redirects to main CLI with npm ecosystem
-
-    Maintained for backward compatibility with existing scripts and documentation
-    """
-    # Redirect to main CLI with npm ecosystem forced
-    ctx = click.get_current_context()
-    ctx.invoke(
-        cli,
-        scan_dir=scan_dir,
-        threat_names=(),  # Empty tuple for default behavior
-        csv_file=csv_file,
-        ecosystems='npm',  # Force npm ecosystem only
-        output_file=output_file,
-        no_save=no_save,
-        list_ecosystems=False,
-        list_affected_packages=list_affected_packages,
-        list_affected_packages_csv=list_affected_packages_csv
-    )
 
 
 @click.group(name="threat-db", help="Threat database management commands")

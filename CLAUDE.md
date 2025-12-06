@@ -187,13 +187,6 @@ threat-db validate --file threats.csv --strict  # Strict mode: fail on unknown e
 threat-db validate --file threats.csv --verbose # Show all warnings and details
 ```
 
-### Legacy npm-only Command
-
-For backward compatibility, the original `npm-scan` command is still available:
-```bash
-npm-scan --dir /path/to/project
-```
-
 ### Docker Usage
 
 **Build image:**
@@ -253,7 +246,7 @@ The scanner uses a modular architecture with ecosystem-specific adapters:
 
 ```
 src/package_scan/
-├── cli.py                         # Multi-ecosystem CLI (includes legacy npm-scan command)
+├── cli.py                         # Multi-ecosystem CLI
 ├── core/                          # Shared components
 │   ├── models.py                  # Finding dataclass
 │   ├── threat_database.py         # Multi-ecosystem CSV loading
@@ -271,9 +264,8 @@ src/package_scan/
 - Loads threats from `threats/` directory or custom CSV files
 - Supports loading specific threats by name (e.g., `sha1-Hulud`)
 - CSV format: `ecosystem,name,version`
-- Supports legacy format: `Package Name,Version` (defaults to npm)
 - Tracks which threats were loaded for reporting
-- Methods: `load_threats()`, `load()` (legacy), `get_compromised_versions()`, `get_all_packages()`, `get_ecosystems()`, `get_loaded_threats()`
+- Methods: `load_threats()`, `get_compromised_versions()`, `get_all_packages()`, `get_ecosystems()`, `get_loaded_threats()`
 
 **ThreatValidator** (`core/threat_validator.py`):
 - Validates threat CSV files before use
@@ -400,13 +392,6 @@ npm,@accordproject/concerto-linter,3.24.1
 maven,org.apache.logging.log4j:log4j-core,2.14.1
 maven,org.mvnpm:posthog-node,4.18.1
 pip,requests,2.8.1
-```
-
-**Legacy format (npm-only, still supported):**
-```csv
-Package Name,Version
-left-pad,1.3.0
-@accordproject/concerto-linter,3.24.1
 ```
 
 ### Package Naming Conventions
@@ -688,8 +673,7 @@ package-scan/
 │   ├── sha1-Hulud.csv         # sha1-Hulud worm packages
 │   └── sample-threats.csv     # Test threats
 ├── scripts/                   # Utility scripts
-│   ├── tag-and-push.sh        # Docker release script
-│   └── sha1-Hulud-legacy.csv  # Legacy threat database
+│   └── tag-and-push.sh        # Docker release script
 ├── pyproject.toml             # Package configuration
 ├── Dockerfile                 # Docker image build
 ├── README.md                  # Project overview
@@ -703,7 +687,10 @@ package-scan/
 ### Project Cleanup (December 2025)
 
 - ✅ Moved utility scripts to `scripts/` directory
-- ✅ Removed legacy `scan_npm_threats.py` (functionality in `cli.py`)
+- ✅ Removed all backward compatibility features:
+  - Removed legacy CSV format support (Package Name,Version)
+  - Removed npm-scan and hulud-scan CLI commands
+  - Removed legacy load() method from ThreatDatabase
 - ✅ Simplified `setup.py` (main config in `pyproject.toml`)
 - ✅ Updated all documentation to reflect rapid-response mission
 

@@ -32,21 +32,6 @@ def valid_modern_csv():
 
 
 @pytest.fixture
-def valid_legacy_csv():
-    """Create a valid legacy format CSV file."""
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False, encoding='utf-8') as f:
-        f.write("Package Name,Version\n")
-        f.write("left-pad,1.3.0\n")
-        f.write("lodash,4.17.20\n")
-        temp_path = f.name
-
-    yield temp_path
-
-    if os.path.exists(temp_path):
-        os.unlink(temp_path)
-
-
-@pytest.fixture
 def invalid_headers_csv():
     """Create CSV with invalid headers."""
     with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False, encoding='utf-8') as f:
@@ -172,29 +157,18 @@ def headers_only_csv():
 class TestThreatValidator:
     """Test ThreatValidator class."""
 
-    def test_validate_valid_modern_format(self, valid_modern_csv):
-        """Test validation of valid modern format CSV."""
+    def test_validate_valid_format(self, valid_modern_csv):
+        """Test validation of valid CSV format."""
         validator = ThreatValidator()
         result = validator.validate_file(Path(valid_modern_csv))
 
         assert result.is_valid
-        assert result.format_type == 'modern'
+        assert result.format_type == 'valid'
         assert not result.has_errors()
         assert result.stats['total_rows'] == 4
         assert result.stats['valid_rows'] == 4
         assert result.stats['unique_ecosystems'] == 3
         assert set(result.stats['ecosystems']) == {'npm', 'maven', 'pip'}
-
-    def test_validate_valid_legacy_format(self, valid_legacy_csv):
-        """Test validation of valid legacy format CSV."""
-        validator = ThreatValidator()
-        result = validator.validate_file(Path(valid_legacy_csv))
-
-        assert result.is_valid
-        assert result.format_type == 'legacy'
-        assert not result.has_errors()
-        assert result.stats['total_rows'] == 2
-        assert result.stats['valid_rows'] == 2
 
     def test_validate_invalid_headers(self, invalid_headers_csv):
         """Test validation fails with invalid headers."""
@@ -395,7 +369,7 @@ class TestRealThreatFiles:
 
         # Sample threats should be valid
         assert result.is_valid
-        assert result.format_type == 'modern'
+        assert result.format_type == 'valid'
         assert result.stats['total_rows'] > 0
 
     def test_validate_sha1_hulud(self):
@@ -410,7 +384,7 @@ class TestRealThreatFiles:
 
         # sha1-Hulud should be valid
         assert result.is_valid
-        assert result.format_type == 'modern'
+        assert result.format_type == 'valid'
         assert result.stats['total_rows'] > 0
 
 
@@ -430,7 +404,7 @@ class TestEdgeCases:
 
             # Should still be valid (extra columns are ignored)
             assert result.is_valid
-            assert result.format_type == 'modern'
+            assert result.format_type == 'valid'
         finally:
             if os.path.exists(temp_path):
                 os.unlink(temp_path)

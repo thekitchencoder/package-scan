@@ -17,11 +17,8 @@ import click
 # Known ecosystems (expandable as new adapters are added)
 KNOWN_ECOSYSTEMS = {'npm', 'maven', 'pip', 'gem'}
 
-# Legacy format headers
-LEGACY_HEADERS = {'Package Name', 'Version'}
-
-# Modern format headers
-MODERN_HEADERS = {'ecosystem', 'name', 'version'}
+# Required CSV headers
+REQUIRED_HEADERS = {'ecosystem', 'name', 'version'}
 
 # Version string validation patterns
 VERSION_PATTERN = re.compile(r'^[0-9a-zA-Z.\-_+]+$')
@@ -45,7 +42,7 @@ class ValidationResult:
     """Results of threat CSV validation"""
     file_path: Path
     is_valid: bool
-    format_type: str  # 'modern', 'legacy', 'invalid'
+    format_type: str  # 'valid', 'invalid'
     errors: List[ValidationError] = field(default_factory=list)
     warnings: List[ValidationError] = field(default_factory=list)
     stats: dict = field(default_factory=dict)
@@ -158,13 +155,13 @@ class ThreatValidator:
                 if format_type == 'invalid':
                     result.add_error(
                         1,
-                        f"Invalid CSV headers. Expected 'ecosystem,name,version' or 'Package Name,Version'. "
+                        f"Invalid CSV headers. Expected 'ecosystem,name,version'. "
                         f"Got: {','.join(headers)}"
                     )
                     return result
 
                 # Validate rows
-                self._validate_rows(reader, format_type, result)
+                self._validate_rows(reader, result)
 
         except UnicodeDecodeError as e:
             result.add_error(0, f"File encoding error: {e}")
@@ -183,22 +180,19 @@ class ThreatValidator:
             headers: Set of header names
 
         Returns:
-            'modern', 'legacy', or 'invalid'
+            'valid' or 'invalid'
         """
-        if MODERN_HEADERS.issubset(headers):
-            return 'modern'
-        elif LEGACY_HEADERS.issubset(headers):
-            return 'legacy'
+        if REQUIRED_HEADERS.issubset(headers):
+            return 'valid'
         else:
             return 'invalid'
 
-    def _validate_rows(self, reader: csv.DictReader, format_type: str, result: ValidationResult):
+    def _validate_rows(self, reader: csv.DictReader, result: ValidationResult):
         """
         Validate all rows in CSV
 
         Args:
             reader: CSV DictReader
-            format_type: 'modern' or 'legacy'
             result: ValidationResult to populate
         """
         seen_entries: Set[Tuple[str, str, str]] = set()
@@ -211,36 +205,30 @@ class ThreatValidator:
             total_rows += 1
             row_valid = True
 
-            # Extract fields based on format
-            if format_type == 'modern':
-                ecosystem = row.get('ecosystem', '').strip().lower()
-                name = row.get('name', '').strip()
-                version = row.get('version', '').strip()
-            else:  # legacy
-                ecosystem = 'npm'  # Legacy format defaults to npm
-                name = row.get('Package Name', '').strip()
-                version = row.get('Version', '').strip()
+            # Extract fields
+            ecosystem = row.get('ecosystem', '').strip().lower()
+            name = row.get('name', '').strip()
+            version = row.get('version', '').strip()
 
-            # Validate ecosystem (modern format only)
-            if format_type == 'modern':
-                if not ecosystem:
-                    result.add_error(row_num, "Empty ecosystem field", field='ecosystem')
-                    row_valid = False
-                elif self.strict_ecosystems and ecosystem not in KNOWN_ECOSYSTEMS:
-                    result.add_error(
-                        row_num,
-                        f"Unknown ecosystem: '{ecosystem}'. Known: {', '.join(sorted(KNOWN_ECOSYSTEMS))}",
-                        field='ecosystem',
-                        value=ecosystem
-                    )
-                    row_valid = False
-                elif ecosystem not in KNOWN_ECOSYSTEMS:
-                    result.add_warning(
-                        row_num,
-                        f"Unknown ecosystem: '{ecosystem}'. Known: {', '.join(sorted(KNOWN_ECOSYSTEMS))}",
-                        field='ecosystem',
-                        value=ecosystem
-                    )
+            # Validate ecosystem
+            if not ecosystem:
+                result.add_error(row_num, "Empty ecosystem field", field='ecosystem')
+                row_valid = False
+            elif self.strict_ecosystems and ecosystem not in KNOWN_ECOSYSTEMS:
+                result.add_error(
+                    row_num,
+                    f"Unknown ecosystem: '{ecosystem}'. Known: {', '.join(sorted(KNOWN_ECOSYSTEMS))}",
+                    field='ecosystem',
+                    value=ecosystem
+                )
+                row_valid = False
+            elif ecosystem not in KNOWN_ECOSYSTEMS:
+                result.add_warning(
+                    row_num,
+                    f"Unknown ecosystem: '{ecosystem}'. Known: {', '.join(sorted(KNOWN_ECOSYSTEMS))}",
+                    field='ecosystem',
+                    value=ecosystem
+                )
 
             # Validate package name
             if not name:
