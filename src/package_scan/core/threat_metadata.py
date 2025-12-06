@@ -4,10 +4,12 @@ Threat metadata parsing and validation
 Parses metadata from CSV comment lines in threat database files.
 """
 
+import csv
 import re
+from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set
 
 import click
 
@@ -25,6 +27,7 @@ class ThreatMetadata:
     file_path: Path
     metadata: Dict[str, str] = field(default_factory=dict)
     comment_lines: List[str] = field(default_factory=list)
+    stats: Dict = field(default_factory=dict)
 
     def get(self, key: str, default: Optional[str] = None) -> Optional[str]:
         """Get metadata value by key (case-insensitive)"""
@@ -50,12 +53,45 @@ class ThreatMetadata:
         """Check if all recommended fields are present"""
         return len(self.get_missing_recommended_fields()) == 0
 
-    def print_metadata(self):
-        """Print metadata in a formatted way"""
-        if not self.metadata:
-            click.echo(click.style("No metadata found in threat file", fg='yellow'))
+    def compute_stats(self):
+        """Compute statistics from the CSV file"""
+        if not self.file_path.exists():
             return
 
+        try:
+            # Get filtered CSV content (without comments)
+            csv_content = get_csv_reader_without_comments(self.file_path)
+            reader = csv.DictReader(csv_content)
+
+            # Track ecosystems and packages
+            ecosystems: Dict[str, Set[str]] = defaultdict(set)
+            total_versions = 0
+
+            for row in reader:
+                ecosystem = row.get('ecosystem', '').strip().lower()
+                name = row.get('name', '').strip()
+
+                if ecosystem and name:
+                    ecosystems[ecosystem].add(name)
+                    total_versions += 1
+
+            # Compute summary statistics
+            self.stats = {
+                'total_versions': total_versions,
+                'total_packages': sum(len(packages) for packages in ecosystems.values()),
+                'ecosystems': sorted(ecosystems.keys()),
+                'ecosystem_details': {
+                    eco: {'packages': len(packages), 'package_names': sorted(packages)}
+                    for eco, packages in ecosystems.items()
+                }
+            }
+
+        except Exception:
+            # If we can't compute stats, just leave them empty
+            pass
+
+    def print_metadata(self):
+        """Print metadata in a formatted way"""
         click.echo(click.style("=" * 80, fg='cyan', bold=True))
         click.echo(click.style("📋 THREAT METADATA", fg='cyan', bold=True))
         click.echo(click.style("=" * 80, fg='cyan', bold=True))
@@ -63,23 +99,50 @@ class ThreatMetadata:
         click.echo(click.style(f"File: {self.file_path}", fg='white', bold=True))
         click.echo()
 
-        # Show metadata fields
-        for key, value in self.metadata.items():
-            # Highlight recommended fields
-            if key.lower() in RECOMMENDED_FIELDS:
-                click.echo(f"{click.style(key + ':', fg='green', bold=True)} {value}")
-            else:
-                click.echo(f"{click.style(key + ':', fg='cyan')} {value}")
+        if self.metadata:
+            # Show metadata fields
+            for key, value in self.metadata.items():
+                # Highlight recommended fields
+                if key.lower() in RECOMMENDED_FIELDS:
+                    click.echo(f"{click.style(key + ':', fg='green', bold=True)} {value}")
+                else:
+                    click.echo(f"{click.style(key + ':', fg='cyan')} {value}")
 
-        # Check for missing recommended fields
-        missing = self.get_missing_recommended_fields()
-        if missing:
+            # Check for missing recommended fields
+            missing = self.get_missing_recommended_fields()
+            if missing:
+                click.echo()
+                click.echo(click.style(
+                    f"⚠️  Missing recommended fields: {', '.join(missing)}",
+                    fg='yellow'
+                ))
+        else:
+            click.echo(click.style("No metadata found in threat file", fg='yellow'))
+
+        # Show statistics if available
+        if self.stats:
             click.echo()
-            click.echo(click.style(
-                f"⚠️  Missing recommended fields: {', '.join(missing)}",
-                fg='yellow'
-            ))
+            click.echo(click.style("📊 THREAT STATISTICS", fg='cyan', bold=True))
+            click.echo()
 
+            total_packages = self.stats.get('total_packages', 0)
+            total_versions = self.stats.get('total_versions', 0)
+            ecosystems = self.stats.get('ecosystems', [])
+
+            click.echo(f"{click.style('Total Packages:', bold=True)} {total_packages}")
+            click.echo(f"{click.style('Total Versions:', bold=True)} {total_versions}")
+            click.echo(f"{click.style('Ecosystems:', bold=True)} {', '.join(ecosystems)}")
+
+            # Show per-ecosystem breakdown
+            ecosystem_details = self.stats.get('ecosystem_details', {})
+            if ecosystem_details:
+                click.echo()
+                for ecosystem in sorted(ecosystem_details.keys()):
+                    details = ecosystem_details[ecosystem]
+                    pkg_count = details.get('packages', 0)
+                    click.echo(f"  {click.style(f'• {ecosystem}:', fg='magenta', bold=True)} {pkg_count} packages")
+
+        click.echo()
         click.echo(click.style("=" * 80, fg='cyan', bold=True))
 
 

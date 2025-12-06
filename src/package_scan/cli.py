@@ -428,6 +428,7 @@ def info_threat_db(file_path: str):
     from pathlib import Path
 
     metadata = parse_threat_metadata(Path(file_path))
+    metadata.compute_stats()
     metadata.print_metadata()
 
 
