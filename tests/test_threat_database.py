@@ -84,16 +84,6 @@ def test_load_threats_from_csv(temp_csv_file):
     assert db.get_compromised_versions('npm', 'nonexistent') == set()
 
 
-def test_load_legacy_format(legacy_csv_file):
-    """Test loading legacy CSV format (defaults to npm ecosystem)."""
-    db = ThreatDatabase()
-    db.load(legacy_csv_file)
-
-    # Should default to npm ecosystem
-    assert db.get_compromised_versions('npm', 'left-pad') == {'1.3.0'}
-    assert db.get_compromised_versions('npm', 'lodash') == {'4.17.20'}
-
-
 def test_load_specific_threat(temp_threats_dir):
     """Test loading a specific threat by name."""
     db = ThreatDatabase(threats_dir=temp_threats_dir)

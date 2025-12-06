@@ -129,6 +129,11 @@ class ThreatValidator:
             result.add_error(0, f"Not a file: {file_path}")
             return result
 
+        # Check if file is empty
+        if file_path.stat().st_size == 0:
+            result.add_error(0, "File is empty")
+            return result
+
         # Check for metadata and warn if missing recommended fields
         metadata = parse_threat_metadata(file_path)
         missing_fields = metadata.get_missing_recommended_fields()
